@@ -2,8 +2,8 @@ name: Daily Stock Data Update
 
 on:
   schedule:
-    # 매일 한국 시간 밤 11시(UTC 14:00)에 자동으로 컴퓨터를 켭니다.
-    - cron: '0 14 * * *'
+    # 한국 시간(KST) 매일 오후 17:00 (세계 표준시 UTC 기준 오전 08:00)
+    - cron: '0 8 * * *'
   workflow_dispatch: # 주말이나 낮에 내가 원할 때 수동으로도 켤 수 있게 하는 버튼입니다.
 
 jobs:
@@ -25,12 +25,12 @@ jobs:
 
     - name: 주식 분석 프로그램 실행하기
       run: |
-        python update_stock.py  # 우리가 곧 작성할 파이썬 실행 파일 이름입니다.
+        python update_stock.py
 
     - name: 계산된 결과 데이터를 저장소에 업데이트하기
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add .
-        git commit -m "내일 매매 참고용 데이터 업데이트 완료" || echo "변경사항 없음"
+        git commit -m "오후 17시 주도주 매트릭스 및 트래킹 데이터 업데이트 완료" || echo "변경사항 없음"
         git push
