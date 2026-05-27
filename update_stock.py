@@ -122,6 +122,37 @@ if today_captured_list:
 # 정산 완료된 장부 저장
 df_history.to_csv(history_file, index=False)
 
+# [update_stock.py 의 [5단계] 직전 추가 코드]
+print("📊 [4.5단계] 카테고리별 누적 통계(승률) 계산 중...")
+stats_results = {f"R{i}C{j}": {"total": 0, "success": 0, "win_rate": 0} for i in range(1, 5) for j in range(1, 5)}
+
+if os.path.exists(history_file) and not df_history.empty:
+    # 5일 뒤 정산이 완료된 데이터만 기준으로 승률 계산
+    df_settled = df_history[df_history['5D_Return'].notna()]
+    
+    for idx, row_data in df_settled.iterrows():
+        cell = row_data['Cell']
+        if cell in stats_results:
+            stats_results[cell]["total"] += 1
+            # 성공 기준: 5일 이내에 조금이라도 수익이 났거나(+0% 이상), 원하시는 기준(예: +3% 이상) 설정 가능
+            if row_data['5D_Return'] > 0: 
+                stats_results[cell]["success"] += 1
+
+    # 승률 퍼센트 변환
+    for cell in stats_results:
+        tot = stats_results[cell]["total"]
+        suc = stats_results[cell]["success"]
+        stats_results[cell]["win_rate"] = round((suc / tot) * 100, 1) if tot > 0 else 0
+
+# 최종 합치기
+final_web_data = {
+    "captured": matrix_results,  # 오늘 포착 종목
+    "stats": stats_results       # 칸별 누적 승률
+}
+
+with open('matrix_data.json', 'w', encoding='utf-8') as f:
+    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
+
 # [5단계] 웹페이지용 최종 JSON 저장 (매트릭스 결과물)
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
     json.dump(matrix_results, f, ensure_ascii=False, indent=4)
