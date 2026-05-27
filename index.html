@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주도주 4x4 차트 패턴 매트릭스</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f5f7fa; color: #333; margin: 20px; }
+        h1 { text-align: center; color: #1e293b; }
+        .grid-container { display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 10px; max-width: 1000px; margin: 20px auto; }
+        .axis-label { display: flex; align-items: center; justify-content: center; font-weight: bold; background: #e2e8f0; border-radius: 5px; text-align: center; font-size: 0.9rem; padding: 5px; }
+        .grid-cell { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 10px; min-height: 120px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .grid-cell h3 { margin: 0 0 8px 0; font-size: 0.85rem; color: #64748b; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
+        .hot-cell { border-color: #ef4444; background-color: #fef2f2; } /* 우상단 과열/세력개입 칸 강조 */
+        .stock-item { font-size: 0.85rem; margin-bottom: 4px; padding: 4px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6; }
+        .stock-item.high { border-left-color: #ef4444; }
+        .stock-info { font-size: 0.75rem; color: #64748b; }
+        .meta-info { text-align: center; color: #64748b; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <h1>📊 주도주 4x4 차트 패턴 매트릭스</h1>
+    <p class="meta-info">시가총액 + 순수 거래량(Volume) 상위 500개 종목 대상 당일 패턴 분석</p>
+    
+    <div class="grid-container">
+        <div></div>
+        <div class="axis-label">거래량 소<br>(~100%)</div>
+        <div class="axis-label">거래량 중<br>(100%~200%)</div>
+        <div class="axis-label">거래량 대<br>(200%~500%)</div>
+        <div class="axis-label">거래량 폭발<br>(500% 이상)</div>
+
+        <div class="axis-label">상승 4구간<br>(12%~)</div>
+        <div class="grid-cell" id="R4C1"><h3>잔파동</h3></div>
+        <div class="grid-cell" id="R4C2"><h3>급등주</h3></div>
+        <div class="grid-cell" id="R4C3"><h3>주도주 후보</h3></div>
+        <div class="grid-cell hot-cell" id="R4C4"><h3>★★ 세력개입 ★★</h3></div>
+
+        <div class="axis-label">상승 3구간<br>(6%~12%)</div>
+        <div class="grid-cell" id="R4C1"><h3>소외주</h3></div>
+        <div class="grid-cell" id="R4C2"><h3>일반상승</h3></div>
+        <div class="grid-cell" id="R4C3"><h3>매물대돌파</h3></div>
+        <div class="grid-cell" id="R4C4"><h3>★ 바닥탈출 ★</h3></div>
+
+        <div class="axis-label">상승 2구간<br>(3%~6%)</div>
+        <div class="grid-cell" id="R4C1"><h3>개인매수</h3></div>
+        <div class="grid-cell" id="R4C2"><h3>매수유입</h3></div>
+        <div class="grid-cell" id="R4C3"><h3>단기저항</h3></div>
+        <div class="grid-cell" id="R4C4"><h3>매물소화</h3></div>
+
+        <div class="axis-label">상승 1구간<br>(0%~3%)</div>
+        <div class="grid-cell" id="R4C1"><h3>횡보</h3></div>
+        <div class="grid-cell" id="R4C2"><h3>숨고르기</h3></div>
+        <div class="grid-cell" id="R4C3"><h3>윗꼬리주의</h3></div>
+        <div class="grid-cell" id="R4C4"><h3>고점매물출하</h3></div>
+    </div>
+
+    <script>
+        // 파이썬이 생성한 matrix_data.json 파일을 불러와서 화면에 배치하는 자바스크립트
+        fetch('matrix_data.json')
+            .then(response => response.json())
+            .then(data => {
+                for (const cellId in data) {
+                    const cell = document.getElementById(cellId);
+                    if (!cell) continue;
+                    
+                    const stocks = data[cellId];
+                    if (stocks.length === 0) {
+                        cell.innerHTML += `<div style="color:#cbd5e1; font-size:0.8rem; text-align:center; margin-top:20px;">포착 없음</div>`;
+                    }
+                    
+                    stocks.forEach(stock => {
+                        const isHigh = stock.change >= 6;
+                        const itemHtml = `
+                            <div class="stock-item ${isHigh ? 'high' : ''}">
+                                <strong>${stock.name}</strong> <span class="stock-info">(${stock.code})</span>
+                                <div class="stock-info">▶ 상승: ${stock.change}% / 거래량: ${stock.volume}%</div>
+                            </div>
+                        `;
+                        cell.innerHTML += itemHtml;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("데이터를 불러오지 못했습니다. 파이썬 프로그램이 먼저 가동되어야 합니다.", error);
+            });
+    </script>
+</body>
+</html>
