@@ -3,35 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주도주 4x4 패턴 트래커 & 퀀트 타임라인</title>
+    <title>주도주 4x4 패턴 트래커</title>
     <style>
-        /* 공통 스타일 및 테마 */
+        /* 공통 기본 스타일 */
         body { font-family: '-apple-system', BlinkMacSystemFont, 'Malgun Gothic', sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 15px; }
-        header { text-align: center; margin-bottom: 20px; padding: 15px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        header { text-align: center; margin-bottom: 20px; padding: 10px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         h1 { font-size: 1.5rem; margin: 0 0 5px 0; color: #1e293b; }
-        h2 { font-size: 1.2rem; color: #1e293b; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
         .meta-info { font-size: 0.85rem; color: #64748b; margin: 0; }
         
-        /* 4x4 매트릭스 내부 스펙 */
         .win-badge { display: inline-block; background: #22c55e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-top: 3px; }
         .stock-item { font-size: 0.85rem; margin-top: 6px; padding: 6px; background: #f1f5f9; border-radius: 6px; border-left: 4px solid #3b82f6; }
         .stock-item.high { border-left-color: #ef4444; background: #fef2f2; }
         .stock-info { font-size: 0.75rem; color: #64748b; }
 
-        /* 사후 추적 타임라인 스타일 */
-        .timeline-container { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .timeline-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
-        .timeline-row:last-child { border-bottom: none; }
-        .tl-date { width: 90px; color: #64748b; font-weight: bold; }
-        .tl-name { width: 120px; font-weight: 500; }
-        .tl-cell { width: 80px; text-align: center; background: #f1f5f9; border-radius: 4px; font-size: 0.75rem; padding: 2px 4px; margin-right: 10px; }
-        .tl-returns { flex-grow: 1; display: flex; gap: 10px; }
-        .return-tag { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-        .return-tag.plus { background: #fef2f2; color: #ef4444; }
-        .return-tag.minus { background: #eff6ff; color: #3b82f6; }
-        .return-tag.none { background: #f1f5f9; color: #94a3b8; }
-
-        /* ==================== PC 버전 레이아웃 (화면 가로 > 768px) ==================== */
+        /* ==================== PC 버전 스타일 (화면 가로가 넓을 때) ==================== */
         @media (min-width: 769px) {
             .grid-container { display: grid; grid-template-columns: 100px repeat(4, 1fr); gap: 12px; max-width: 1200px; margin: 0 auto; }
             .axis-label { display: flex; align-items: center; justify-content: center; font-weight: bold; background: #e2e8f0; border-radius: 8px; text-align: center; font-size: 0.85rem; padding: 10px; }
@@ -40,16 +25,14 @@
             .hot-cell { border-color: #fca5a5; background-color: #fff5f5; }
         }
 
-        /* ==================== 모바일 버전 레이아웃 (스마트폰 화면) ==================== */
+        /* ==================== 모바일 버전 스타일 (스마트폰 화면) ==================== */
         @media (max-width: 768px) {
             .grid-container { display: flex; flex-direction: column; gap: 15px; }
-            .axis-label { display: none; }
+            .axis-label { display: none; } /* 모바일에서는 축 레이블을 숨김 */
             .grid-cell { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
             .grid-cell h3 { margin: 0 0 8px 0; font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
             .grid-cell h3::after { content: attr(data-label); font-size: 0.75rem; color: #94a3b8; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
             .hot-cell { border-left: 5px solid #ef4444; }
-            .timeline-row { flex-wrap: wrap; gap: 5px; }
-            .tl-returns { width: 100%; margin-top: 5px; }
         }
     </style>
 </head>
@@ -57,7 +40,7 @@
 
     <header>
         <h1>📊 주도주 4x4 패턴 트래커</h1>
-        <p class="meta-info">시총 + 순수 거래량 상위 500개 종목 사후 통계 시스템</p>
+        <p class="meta-info">시총 + 거래량 상위 500개 종목 추적 시스템</p>
     </header>
     
     <div class="grid-container">
@@ -92,13 +75,7 @@
         <div class="grid-cell" id="R1C4" data-label="상승0~3%/거래폭발"><h3>고점매물출하</h3></div>
     </div>
 
-    <h2>🕒 최근 포착 종목 성적표 (사후 트래킹 타임라인)</h2>
-    <div class="timeline-container" id="timeline">
-        <div style="color:#94a3b8; text-align:center; padding:20px; font-size:0.9rem;">데이터 장부가 누적되면 트래킹 리스트가 생성됩니다.</div>
-    </div>
-
     <script>
-        // ① 메인 4x4 매트릭스 및 누적 승률 데이터 매핑
         fetch('matrix_data.json')
             .then(response => response.json())
             .then(res => {
@@ -109,76 +86,32 @@
                     const cell = document.getElementById(cellId);
                     if (!cell) continue;
                     
+                    // 1. 누적 승률 배지 달기
                     if(stats && stats[cellId] && stats[cellId].total > 0) {
-                        cell.innerHTML += `<div class="win-badge">3M 승률 ${stats[cellId].win_rate}%</div>`;
+                        const winRate = stats[cellId].win_rate;
+                        const totalCount = stats[cellId].total;
+                        cell.innerHTML += `<div class="win-badge">5일승률 ${winRate}% (${totalCount}회)</div>`;
                     }
 
+                    // 2. 오늘 포착된 종목 배치
                     const stocks = captured[cellId];
                     if (stocks.length === 0) {
-                        cell.innerHTML += `<div style="color:#94a3b8; font-size:0.8rem; margin-top:8px;">포착 없음</div>`;
+                        cell.innerHTML += `<div style="color:#94a3b8; font-size:0.8rem; margin-top:8px;">포착 종목 없음</div>`;
                     }
                     
                     stocks.forEach(stock => {
                         const isHigh = stock.change >= 6;
-                        cell.innerHTML += `
+                        const itemHtml = `
                             <div class="stock-item ${isHigh ? 'high' : ''}">
                                 <strong>${stock.name}</strong> <span class="stock-info">(${stock.code})</span>
                                 <div class="stock-info">상승: ${stock.change}% / 거래량: ${stock.volume}%</div>
                             </div>
                         `;
+                        cell.innerHTML += itemHtml;
                     });
                 }
-            }).catch(err => console.error("매트릭스 렌더링 실패:", err));
-
-        // ② 백엔드 장부(matrix_history.csv)를 읽어와 하단 타임라인 구성하기
-        fetch('matrix_history.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                const lines = csvText.split('\n');
-                if (lines.length <= 1) return;
-
-                const headers = lines[0].split(',');
-                const timelineContainer = document.getElementById('timeline');
-                timelineContainer.innerHTML = ''; // 초기화
-
-                // 최근에 포착된 종목이 맨 위로 오도록 역순(뒷줄부터) 정렬 (최대 최근 15개 노출)
-                const maxDisplay = Math.min(lines.length - 1, 15);
-                
-                for (let i = lines.length - 1; i >= lines.length - maxDisplay; i--) {
-                    if (!lines[i]) continue;
-                    const row = lines[i].split(',');
-                    
-                    // CSV 컬럼 순서 매칭 (Date, Code, Name, Cell, Base_Price, 1D_Return, 3D_Return, 5D_Return)
-                    const date = row[0];
-                    const name = row[2];
-                    const cellName = row[3];
-                    const r1d = row[5];
-                    const r3d = row[6];
-                    const r5d = row[7];
-
-                    const formatReturn = (val, label) => {
-                        if (!val || val.trim() === "" || val === "None") return `<span class="return-tag none">${label}: 대기</span>`;
-                        const num = parseFloat(val);
-                        return num > 0 
-                            ? `<span class="return-tag plus">${label}: +${num}%</span>` 
-                            : `<span class="return-tag minus">${label}: ${num}%</span>`;
-                    };
-
-                    const rowHtml = `
-                        <div class="timeline-row">
-                            <div class="tl-date">${date}</div>
-                            <div class="tl-cell">${cellName}</div>
-                            <div class="tl-name">${name}</div>
-                            <div class="tl-returns">
-                                ${formatReturn(r1d, '1일 뒤')}
-                                ${formatReturn(r3d, '3일 뒤')}
-                                ${formatReturn(r5d, '5일 뒤')}
-                            </div>
-                        </div>
-                    `;
-                    timelineContainer.innerHTML += rowHtml;
-                }
-            }).catch(err => console.log("아직 누적된 사후 트래킹 장부가 없습니다. 데이터가 쌓이면 활성화됩니다."));
+            })
+            .catch(err => console.error("데이터 로딩 실패:", err));
     </script>
 </body>
 </html>
