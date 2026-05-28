@@ -1,489 +1,287 @@
 {
-    "R1C1": [
-        {
-            "code": "005930",
-            "name": "삼성전자",
-            "change": 0.33,
-            "volume": 22.0
+    "captured": {
+        "R1C1": [
+            {
+                "code": "095610",
+                "name": "테스",
+                "change": 0.25,
+                "volume": 84.9
+            },
+            {
+                "code": "251270",
+                "name": "넷마블",
+                "change": 1.58,
+                "volume": 40.6
+            },
+            {
+                "code": "033780",
+                "name": "KT&G",
+                "change": 1.11,
+                "volume": 15.2
+            },
+            {
+                "code": "021240",
+                "name": "코웨이",
+                "change": 2.4,
+                "volume": 18.5
+            },
+            {
+                "code": "259960",
+                "name": "크래프톤",
+                "change": 0.98,
+                "volume": 19.1
+            },
+            {
+                "code": "001040",
+                "name": "CJ",
+                "change": 1.18,
+                "volume": 19.9
+            }
+        ],
+        "R1C2": [
+            {
+                "code": "009150",
+                "name": "삼성전기",
+                "change": 2.28,
+                "volume": 133.2
+            },
+            {
+                "code": "279570",
+                "name": "케이뱅크",
+                "change": 2.89,
+                "volume": 156.4
+            },
+            {
+                "code": "204270",
+                "name": "제이앤티씨",
+                "change": 0.95,
+                "volume": 165.0
+            },
+            {
+                "code": "012200",
+                "name": "계양전기",
+                "change": 0.74,
+                "volume": 128.4
+            },
+            {
+                "code": "000430",
+                "name": "대원강업",
+                "change": 2.72,
+                "volume": 174.6
+            }
+        ],
+        "R1C3": [
+            {
+                "code": "052710",
+                "name": "아모텍",
+                "change": 1.02,
+                "volume": 307.2
+            }
+        ],
+        "R1C4": [],
+        "R2C1": [
+            {
+                "code": "005850",
+                "name": "에스엘",
+                "change": 3.99,
+                "volume": 24.8
+            },
+            {
+                "code": "127120",
+                "name": "제이에스링크",
+                "change": 5.66,
+                "volume": 92.4
+            }
+        ],
+        "R2C2": [],
+        "R2C3": [
+            {
+                "code": "001820",
+                "name": "삼화콘덴서",
+                "change": 4.08,
+                "volume": 497.6
+            }
+        ],
+        "R2C4": [],
+        "R3C1": [
+            {
+                "code": "006110",
+                "name": "삼아알미늄",
+                "change": 6.84,
+                "volume": 40.7
+            },
+            {
+                "code": "365270",
+                "name": "큐라클",
+                "change": 6.35,
+                "volume": 79.5
+            },
+            {
+                "code": "259630",
+                "name": "엠플러스",
+                "change": 6.52,
+                "volume": 68.3
+            }
+        ],
+        "R3C2": [
+            {
+                "code": "084990",
+                "name": "헬릭스미스",
+                "change": 6.46,
+                "volume": 157.1
+            },
+            {
+                "code": "181710",
+                "name": "NHN",
+                "change": 6.81,
+                "volume": 156.9
+            }
+        ],
+        "R3C3": [],
+        "R3C4": [],
+        "R4C1": [
+            {
+                "code": "107640",
+                "name": "한중엔시에스",
+                "change": 12.13,
+                "volume": 84.8
+            }
+        ],
+        "R4C2": [
+            {
+                "code": "0088M0",
+                "name": "메쥬",
+                "change": 24.8,
+                "volume": 136.1
+            }
+        ],
+        "R4C3": [
+            {
+                "code": "003280",
+                "name": "흥아해운",
+                "change": 13.96,
+                "volume": 212.1
+            },
+            {
+                "code": "010580",
+                "name": "에스엠벡셀",
+                "change": 13.7,
+                "volume": 362.3
+            },
+            {
+                "code": "126730",
+                "name": "코칩",
+                "change": 15.79,
+                "volume": 452.0
+            },
+            {
+                "code": "065680",
+                "name": "우주일렉트로",
+                "change": 17.19,
+                "volume": 404.6
+            },
+            {
+                "code": "024060",
+                "name": "흥구석유",
+                "change": 20.71,
+                "volume": 342.6
+            }
+        ],
+        "R4C4": [
+            {
+                "code": "024800",
+                "name": "유성티엔에스",
+                "change": 29.86,
+                "volume": 1775.6
+            },
+            {
+                "code": "382840",
+                "name": "원준",
+                "change": 13.05,
+                "volume": 603.5
+            }
+        ]
+    },
+    "stats": {
+        "R1C1": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "018880",
-            "name": "한온시스템",
-            "change": 1.15,
-            "volume": 18.0
+        "R1C2": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "018260",
-            "name": "삼성에스디에스",
-            "change": 0.2,
-            "volume": 84.8
+        "R1C3": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "064400",
-            "name": "LG씨엔에스",
-            "change": 1.01,
-            "volume": 42.6
+        "R1C4": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "080220",
-            "name": "제주반도체",
-            "change": 1.55,
-            "volume": 25.2
+        "R2C1": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "336260",
-            "name": "두산퓨얼셀",
-            "change": 0.69,
-            "volume": 29.3
+        "R2C2": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "417200",
-            "name": "LS머트리얼즈",
-            "change": 1.72,
-            "volume": 21.5
+        "R2C3": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "035420",
-            "name": "NAVER",
-            "change": 1.49,
-            "volume": 91.2
+        "R2C4": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "353200",
-            "name": "대덕전자",
-            "change": 2.69,
-            "volume": 38.0
+        "R3C1": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "007660",
-            "name": "이수페타시스",
-            "change": 2.75,
-            "volume": 28.5
+        "R3C2": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "307950",
-            "name": "현대오토에버",
-            "change": 0.13,
-            "volume": 35.4
+        "R3C3": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "358570",
-            "name": "지아이이노베이션",
-            "change": 0.07,
-            "volume": 40.7
+        "R3C4": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "003550",
-            "name": "LG",
-            "change": 0.08,
-            "volume": 19.8
+        "R4C1": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "007810",
-            "name": "코리아써키트",
-            "change": 2.8,
-            "volume": 28.0
+        "R4C2": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "417840",
-            "name": "저스템",
-            "change": 0.83,
-            "volume": 69.7
+        "R4C3": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         },
-        {
-            "code": "141080",
-            "name": "리가켐바이오",
-            "change": 0.68,
-            "volume": 17.6
-        },
-        {
-            "code": "078600",
-            "name": "대주전자재료",
-            "change": 1.83,
-            "volume": 21.7
-        },
-        {
-            "code": "278470",
-            "name": "에이피알",
-            "change": 2.44,
-            "volume": 32.5
-        },
-        {
-            "code": "032350",
-            "name": "롯데관광개발",
-            "change": 1.95,
-            "volume": 25.0
-        },
-        {
-            "code": "041190",
-            "name": "우리기술투자",
-            "change": 0.68,
-            "volume": 28.2
-        },
-        {
-            "code": "089970",
-            "name": "브이엠",
-            "change": 2.56,
-            "volume": 21.7
-        },
-        {
-            "code": "290690",
-            "name": "소룩스",
-            "change": 1.87,
-            "volume": 20.5
-        },
-        {
-            "code": "107640",
-            "name": "한중엔시에스",
-            "change": 0.71,
-            "volume": 84.8
-        },
-        {
-            "code": "232680",
-            "name": "라온로보틱스",
-            "change": 1.16,
-            "volume": 80.0
-        },
-        {
-            "code": "054210",
-            "name": "이랜텍",
-            "change": 0.17,
-            "volume": 34.1
-        },
-        {
-            "code": "195870",
-            "name": "해성디에스",
-            "change": 1.62,
-            "volume": 34.7
-        },
-        {
-            "code": "034730",
-            "name": "SK",
-            "change": 0.44,
-            "volume": 23.6
-        },
-        {
-            "code": "136480",
-            "name": "하림",
-            "change": 0.69,
-            "volume": 16.4
-        },
-        {
-            "code": "217730",
-            "name": "강스템바이오텍",
-            "change": 0.31,
-            "volume": 17.7
-        },
-        {
-            "code": "251270",
-            "name": "넷마블",
-            "change": 0.6,
-            "volume": 40.6
-        },
-        {
-            "code": "078130",
-            "name": "국일제지",
-            "change": 1.89,
-            "volume": 23.6
-        },
-        {
-            "code": "005850",
-            "name": "에스엘",
-            "change": 1.48,
-            "volume": 24.8
-        },
-        {
-            "code": "204270",
-            "name": "제이앤티씨",
-            "change": 1.2,
-            "volume": 36.7
-        },
-        {
-            "code": "001040",
-            "name": "CJ",
-            "change": 0.23,
-            "volume": 19.9
-        },
-        {
-            "code": "024060",
-            "name": "흥구석유",
-            "change": 1.38,
-            "volume": 9.5
-        },
-        {
-            "code": "101170",
-            "name": "우림피티에스",
-            "change": 1.28,
-            "volume": 11.9
-        },
-        {
-            "code": "078350",
-            "name": "한양디지텍",
-            "change": 0.27,
-            "volume": 35.3
-        },
-        {
-            "code": "033780",
-            "name": "KT&G",
-            "change": 1.11,
-            "volume": 15.2
-        },
-        {
-            "code": "084370",
-            "name": "유진테크",
-            "change": 1.76,
-            "volume": 19.6
-        },
-        {
-            "code": "354320",
-            "name": "알멕",
-            "change": 2.03,
-            "volume": 19.5
-        },
-        {
-            "code": "451760",
-            "name": "컨텍",
-            "change": 0.17,
-            "volume": 16.9
-        },
-        {
-            "code": "021240",
-            "name": "코웨이",
-            "change": 2.4,
-            "volume": 18.5
-        },
-        {
-            "code": "035900",
-            "name": "JYP Ent.",
-            "change": 0.17,
-            "volume": 15.8
-        },
-        {
-            "code": "259960",
-            "name": "크래프톤",
-            "change": 0.98,
-            "volume": 19.1
-        },
-        {
-            "code": "420770",
-            "name": "기가비스",
-            "change": 2.83,
-            "volume": 35.8
-        },
-        {
-            "code": "394420",
-            "name": "리센스메디컬",
-            "change": 1.75,
-            "volume": 13.5
+        "R4C4": {
+            "total": 0,
+            "success": 0,
+            "win_rate": 0
         }
-    ],
-    "R1C2": [],
-    "R1C3": [
-        {
-            "code": "007390",
-            "name": "네이처셀",
-            "change": 1.41,
-            "volume": 315.5
-        }
-    ],
-    "R1C4": [],
-    "R2C1": [
-        {
-            "code": "000660",
-            "name": "SK하이닉스",
-            "change": 4.98,
-            "volume": 34.0
-        },
-        {
-            "code": "009150",
-            "name": "삼성전기",
-            "change": 4.85,
-            "volume": 45.4
-        },
-        {
-            "code": "006400",
-            "name": "삼성SDI",
-            "change": 3.48,
-            "volume": 71.5
-        },
-        {
-            "code": "001740",
-            "name": "SK네트웍스",
-            "change": 5.94,
-            "volume": 86.6
-        },
-        {
-            "code": "011070",
-            "name": "LG이노텍",
-            "change": 5.25,
-            "volume": 58.8
-        },
-        {
-            "code": "397030",
-            "name": "에이프릴바이오",
-            "change": 5.05,
-            "volume": 61.3
-        },
-        {
-            "code": "006110",
-            "name": "삼아알미늄",
-            "change": 4.54,
-            "volume": 40.7
-        },
-        {
-            "code": "356860",
-            "name": "티엘비",
-            "change": 3.39,
-            "volume": 30.8
-        },
-        {
-            "code": "204620",
-            "name": "글로벌텍스프리",
-            "change": 3.37,
-            "volume": 26.3
-        },
-        {
-            "code": "095610",
-            "name": "테스",
-            "change": 3.67,
-            "volume": 30.2
-        },
-        {
-            "code": "372320",
-            "name": "큐로셀",
-            "change": 5.81,
-            "volume": 54.3
-        },
-        {
-            "code": "306620",
-            "name": "지아이에스",
-            "change": 4.04,
-            "volume": 43.6
-        },
-        {
-            "code": "012200",
-            "name": "계양전기",
-            "change": 5.73,
-            "volume": 93.2
-        },
-        {
-            "code": "095660",
-            "name": "네오위즈",
-            "change": 3.37,
-            "volume": 65.0
-        },
-        {
-            "code": "259630",
-            "name": "엠플러스",
-            "change": 3.02,
-            "volume": 68.3
-        }
-    ],
-    "R2C2": [
-        {
-            "code": "034220",
-            "name": "LG디스플레이",
-            "change": 4.48,
-            "volume": 134.4
-        },
-        {
-            "code": "066970",
-            "name": "엘앤에프",
-            "change": 5.75,
-            "volume": 152.5
-        },
-        {
-            "code": "052710",
-            "name": "아모텍",
-            "change": 5.01,
-            "volume": 110.8
-        }
-    ],
-    "R2C3": [
-        {
-            "code": "347850",
-            "name": "디앤디파마텍",
-            "change": 5.52,
-            "volume": 333.5
-        }
-    ],
-    "R2C4": [],
-    "R3C1": [],
-    "R3C2": [],
-    "R3C3": [
-        {
-            "code": "051980",
-            "name": "중앙첨단소재",
-            "change": 8.88,
-            "volume": 278.4
-        },
-        {
-            "code": "126730",
-            "name": "코칩",
-            "change": 11.53,
-            "volume": 201.7
-        }
-    ],
-    "R3C4": [
-        {
-            "code": "006660",
-            "name": "삼성공조",
-            "change": 11.6,
-            "volume": 1915.3
-        }
-    ],
-    "R4C1": [],
-    "R4C2": [
-        {
-            "code": "035890",
-            "name": "서희건설",
-            "change": 12.16,
-            "volume": 104.0
-        },
-        {
-            "code": "388790",
-            "name": "라이콤",
-            "change": 14.89,
-            "volume": 140.1
-        },
-        {
-            "code": "0088M0",
-            "name": "메쥬",
-            "change": 22.04,
-            "volume": 136.1
-        }
-    ],
-    "R4C3": [
-        {
-            "code": "001820",
-            "name": "삼화콘덴서",
-            "change": 17.72,
-            "volume": 256.9
-        },
-        {
-            "code": "393890",
-            "name": "더블유씨피",
-            "change": 20.0,
-            "volume": 227.5
-        },
-        {
-            "code": "242040",
-            "name": "나무기술",
-            "change": 14.24,
-            "volume": 341.3
-        },
-        {
-            "code": "010580",
-            "name": "에스엠벡셀",
-            "change": 13.7,
-            "volume": 362.3
-        },
-        {
-            "code": "101670",
-            "name": "하이드로리튬",
-            "change": 13.22,
-            "volume": 307.1
-        }
-    ],
-    "R4C4": []
+    }
 }
