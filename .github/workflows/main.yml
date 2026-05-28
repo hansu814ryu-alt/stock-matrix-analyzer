@@ -2,9 +2,10 @@ name: Daily Stock Data Update
 
 on:
   schedule:
-    # 한국 시간(KST) 매일 오후 17:00 (세계 표준시 UTC 기준 오전 08:00)
+    # 1. 자동 실행: 한국 시간(KST) 매일 오후 17:00 (UTC 08:00)
     - cron: '0 8 * * *'
-  workflow_dispatch: # 주말이나 낮에 내가 원할 때 수동으로도 켤 수 있게 하는 버튼입니다.
+  workflow_dispatch: 
+    # 2. 당장 실행: 내가 원할 때 깃허브 화면에서 언제든 'Run workflow' 버튼으로 즉시 실행
 
 jobs:
   build:
@@ -43,5 +44,5 @@ jobs:
         
         # 4. 이제 안전하게 하나로 합쳐진 데이터를 저장소에 기록합니다.
         git add .
-        git commit -m "오후 17시 주도주 매트릭스 및 트래킹 데이터 업데이트 완료" || echo "변경사항 없음"
+        git commit -m "주도주 매트릭스 및 트래킹 데이터 업데이트 완료" || echo "변경사항 없음"
         git push
