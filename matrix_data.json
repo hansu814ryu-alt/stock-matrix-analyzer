@@ -2,16 +2,28 @@
     "captured": {
         "R1C1": [
             {
-                "code": "095610",
-                "name": "테스",
-                "change": 0.25,
-                "volume": 84.9
+                "code": "047810",
+                "name": "한국항공우주",
+                "change": 0.96,
+                "volume": 93.0
             },
             {
-                "code": "251270",
-                "name": "넷마블",
-                "change": 1.58,
-                "volume": 40.6
+                "code": "003690",
+                "name": "코리안리",
+                "change": 1.11,
+                "volume": 89.9
+            },
+            {
+                "code": "032350",
+                "name": "롯데관광개발",
+                "change": 1.72,
+                "volume": 85.9
+            },
+            {
+                "code": "096530",
+                "name": "씨젠",
+                "change": 2.0,
+                "volume": 74.6
             },
             {
                 "code": "033780",
@@ -20,16 +32,70 @@
                 "volume": 15.2
             },
             {
+                "code": "078600",
+                "name": "대주전자재료",
+                "change": 2.47,
+                "volume": 91.1
+            },
+            {
+                "code": "251270",
+                "name": "넷마블",
+                "change": 1.58,
+                "volume": 40.6
+            },
+            {
+                "code": "290690",
+                "name": "소룩스",
+                "change": 1.47,
+                "volume": 51.0
+            },
+            {
+                "code": "091810",
+                "name": "트리니티항공",
+                "change": 1.82,
+                "volume": 56.3
+            },
+            {
                 "code": "021240",
                 "name": "코웨이",
                 "change": 2.4,
                 "volume": 18.5
             },
             {
+                "code": "136480",
+                "name": "하림",
+                "change": 1.39,
+                "volume": 94.6
+            },
+            {
+                "code": "009410",
+                "name": "태영건설",
+                "change": 2.65,
+                "volume": 56.5
+            },
+            {
+                "code": "005440",
+                "name": "현대지에프홀딩스",
+                "change": 0.3,
+                "volume": 63.1
+            },
+            {
+                "code": "020560",
+                "name": "아시아나항공",
+                "change": 0.27,
+                "volume": 74.2
+            },
+            {
                 "code": "259960",
                 "name": "크래프톤",
                 "change": 0.98,
                 "volume": 19.1
+            },
+            {
+                "code": "018470",
+                "name": "조일알미늄",
+                "change": 1.2,
+                "volume": 45.3
             },
             {
                 "code": "001040",
@@ -40,46 +106,113 @@
         ],
         "R1C2": [
             {
-                "code": "009150",
-                "name": "삼성전기",
-                "change": 2.28,
-                "volume": 133.2
-            },
-            {
                 "code": "279570",
                 "name": "케이뱅크",
-                "change": 2.89,
-                "volume": 156.4
+                "change": 1.58,
+                "volume": 187.8
             },
             {
-                "code": "204270",
-                "name": "제이앤티씨",
-                "change": 0.95,
-                "volume": 165.0
+                "code": "278470",
+                "name": "에이피알",
+                "change": 1.91,
+                "volume": 105.7
             },
             {
-                "code": "012200",
-                "name": "계양전기",
-                "change": 0.74,
-                "volume": 128.4
+                "code": "095610",
+                "name": "테스",
+                "change": 0.41,
+                "volume": 127.8
+            },
+            {
+                "code": "226950",
+                "name": "올릭스",
+                "change": 2.8,
+                "volume": 123.8
             },
             {
                 "code": "000430",
                 "name": "대원강업",
                 "change": 2.72,
                 "volume": 174.6
+            },
+            {
+                "code": "306620",
+                "name": "지아이에스",
+                "change": 1.96,
+                "volume": 154.2
+            },
+            {
+                "code": "271560",
+                "name": "오리온",
+                "change": 0.68,
+                "volume": 147.5
+            },
+            {
+                "code": "023760",
+                "name": "한국캐피탈",
+                "change": 2.34,
+                "volume": 135.0
+            },
+            {
+                "code": "002350",
+                "name": "넥센타이어",
+                "change": 1.39,
+                "volume": 114.9
+            },
+            {
+                "code": "420770",
+                "name": "기가비스",
+                "change": 2.43,
+                "volume": 135.4
             }
         ],
         "R1C3": [
             {
+                "code": "001740",
+                "name": "SK네트웍스",
+                "change": 2.57,
+                "volume": 281.3
+            },
+            {
                 "code": "052710",
                 "name": "아모텍",
-                "change": 1.02,
-                "volume": 307.2
+                "change": 1.85,
+                "volume": 327.8
+            },
+            {
+                "code": "084990",
+                "name": "헬릭스미스",
+                "change": 1.89,
+                "volume": 204.5
+            },
+            {
+                "code": "117580",
+                "name": "대성에너지",
+                "change": 0.92,
+                "volume": 283.0
             }
         ],
-        "R1C4": [],
+        "R1C4": [
+            {
+                "code": "347850",
+                "name": "디앤디파마텍",
+                "change": 0.84,
+                "volume": 663.4
+            },
+            {
+                "code": "004090",
+                "name": "한국석유",
+                "change": 1.15,
+                "volume": 895.6
+            }
+        ],
         "R2C1": [
+            {
+                "code": "032830",
+                "name": "삼성생명",
+                "change": 3.03,
+                "volume": 93.0
+            },
             {
                 "code": "005850",
                 "name": "에스엘",
@@ -87,23 +220,199 @@
                 "volume": 24.8
             },
             {
+                "code": "041190",
+                "name": "우리기술투자",
+                "change": 3.15,
+                "volume": 83.4
+            },
+            {
+                "code": "008770",
+                "name": "호텔신라",
+                "change": 4.54,
+                "volume": 82.3
+            },
+            {
                 "code": "127120",
                 "name": "제이에스링크",
                 "change": 5.66,
                 "volume": 92.4
+            },
+            {
+                "code": "204620",
+                "name": "글로벌텍스프리",
+                "change": 3.44,
+                "volume": 75.9
             }
         ],
-        "R2C2": [],
+        "R2C2": [
+            {
+                "code": "000660",
+                "name": "SK하이닉스",
+                "change": 4.62,
+                "volume": 111.9
+            },
+            {
+                "code": "353200",
+                "name": "대덕전자",
+                "change": 3.26,
+                "volume": 124.7
+            },
+            {
+                "code": "051910",
+                "name": "LG화학",
+                "change": 3.3,
+                "volume": 124.7
+            },
+            {
+                "code": "161390",
+                "name": "한국타이어앤테크놀로지",
+                "change": 3.28,
+                "volume": 108.5
+            },
+            {
+                "code": "204270",
+                "name": "제이앤티씨",
+                "change": 3.98,
+                "volume": 188.6
+            },
+            {
+                "code": "397030",
+                "name": "에이프릴바이오",
+                "change": 4.17,
+                "volume": 185.6
+            },
+            {
+                "code": "357880",
+                "name": "SKAI",
+                "change": 5.71,
+                "volume": 142.7
+            },
+            {
+                "code": "361610",
+                "name": "SK아이이테크놀로지",
+                "change": 4.33,
+                "volume": 144.1
+            },
+            {
+                "code": "025320",
+                "name": "시노펙스",
+                "change": 4.01,
+                "volume": 106.0
+            },
+            {
+                "code": "232680",
+                "name": "라온로보틱스",
+                "change": 3.1,
+                "volume": 155.6
+            },
+            {
+                "code": "041960",
+                "name": "코미팜",
+                "change": 5.92,
+                "volume": 103.2
+            },
+            {
+                "code": "189300",
+                "name": "인텔리안테크",
+                "change": 5.86,
+                "volume": 100.1
+            }
+        ],
         "R2C3": [
+            {
+                "code": "034220",
+                "name": "LG디스플레이",
+                "change": 3.89,
+                "volume": 200.4
+            },
+            {
+                "code": "373220",
+                "name": "LG에너지솔루션",
+                "change": 3.27,
+                "volume": 352.0
+            },
+            {
+                "code": "035420",
+                "name": "NAVER",
+                "change": 3.38,
+                "volume": 204.3
+            },
+            {
+                "code": "006400",
+                "name": "삼성SDI",
+                "change": 3.36,
+                "volume": 208.8
+            },
+            {
+                "code": "066970",
+                "name": "엘앤에프",
+                "change": 3.23,
+                "volume": 290.7
+            },
+            {
+                "code": "011070",
+                "name": "LG이노텍",
+                "change": 5.78,
+                "volume": 250.6
+            },
+            {
+                "code": "007390",
+                "name": "네이처셀",
+                "change": 3.53,
+                "volume": 421.8
+            },
+            {
+                "code": "466100",
+                "name": "클로봇",
+                "change": 5.03,
+                "volume": 285.1
+            },
+            {
+                "code": "383310",
+                "name": "에코프로에이치엔",
+                "change": 3.03,
+                "volume": 201.1
+            },
+            {
+                "code": "388790",
+                "name": "라이콤",
+                "change": 3.98,
+                "volume": 225.2
+            }
+        ],
+        "R2C4": [
             {
                 "code": "001820",
                 "name": "삼화콘덴서",
-                "change": 4.08,
-                "volume": 497.6
+                "change": 5.54,
+                "volume": 528.1
+            },
+            {
+                "code": "018250",
+                "name": "애경산업",
+                "change": 5.28,
+                "volume": 1230.4
             }
         ],
-        "R2C4": [],
         "R3C1": [
+            {
+                "code": "080220",
+                "name": "제주반도체",
+                "change": 8.51,
+                "volume": 72.0
+            },
+            {
+                "code": "452260",
+                "name": "한화갤러리아",
+                "change": 8.1,
+                "volume": 34.3
+            },
+            {
+                "code": "024840",
+                "name": "KBI메탈",
+                "change": 10.0,
+                "volume": 30.6
+            },
             {
                 "code": "006110",
                 "name": "삼아알미늄",
@@ -115,39 +424,95 @@
                 "name": "큐라클",
                 "change": 6.35,
                 "volume": 79.5
-            },
-            {
-                "code": "259630",
-                "name": "엠플러스",
-                "change": 6.52,
-                "volume": 68.3
             }
         ],
         "R3C2": [
             {
-                "code": "084990",
-                "name": "헬릭스미스",
-                "change": 6.46,
-                "volume": 157.1
+                "code": "358570",
+                "name": "지아이이노베이션",
+                "change": 8.76,
+                "volume": 169.4
+            },
+            {
+                "code": "099440",
+                "name": "스맥",
+                "change": 8.48,
+                "volume": 134.1
+            },
+            {
+                "code": "356860",
+                "name": "티엘비",
+                "change": 7.43,
+                "volume": 113.6
             },
             {
                 "code": "181710",
                 "name": "NHN",
                 "change": 6.81,
                 "volume": 156.9
+            },
+            {
+                "code": "036010",
+                "name": "아비코전자",
+                "change": 6.5,
+                "volume": 190.2
             }
         ],
-        "R3C3": [],
-        "R3C4": [],
+        "R3C3": [
+            {
+                "code": "009150",
+                "name": "삼성전기",
+                "change": 8.51,
+                "volume": 223.9
+            },
+            {
+                "code": "087010",
+                "name": "펩트론",
+                "change": 11.69,
+                "volume": 223.3
+            },
+            {
+                "code": "242040",
+                "name": "나무기술",
+                "change": 7.93,
+                "volume": 460.4
+            }
+        ],
+        "R3C4": [
+            {
+                "code": "149950",
+                "name": "아바텍",
+                "change": 7.54,
+                "volume": 591.7
+            }
+        ],
         "R4C1": [
+            {
+                "code": "332570",
+                "name": "PS일렉트로닉스",
+                "change": 21.27,
+                "volume": 82.6
+            },
             {
                 "code": "107640",
                 "name": "한중엔시에스",
                 "change": 12.13,
                 "volume": 84.8
+            },
+            {
+                "code": "486990",
+                "name": "노타",
+                "change": 29.83,
+                "volume": 14.6
             }
         ],
         "R4C2": [
+            {
+                "code": "007810",
+                "name": "코리아써키트",
+                "change": 14.17,
+                "volume": 109.4
+            },
             {
                 "code": "0088M0",
                 "name": "메쥬",
@@ -157,37 +522,31 @@
         ],
         "R4C3": [
             {
-                "code": "003280",
-                "name": "흥아해운",
-                "change": 13.96,
-                "volume": 212.1
-            },
-            {
                 "code": "010580",
                 "name": "에스엠벡셀",
                 "change": 13.7,
                 "volume": 362.3
             },
             {
-                "code": "126730",
-                "name": "코칩",
-                "change": 15.79,
-                "volume": 452.0
+                "code": "032580",
+                "name": "피델릭스",
+                "change": 19.89,
+                "volume": 221.4
             },
             {
-                "code": "065680",
-                "name": "우주일렉트로",
-                "change": 17.19,
-                "volume": 404.6
-            },
-            {
-                "code": "024060",
-                "name": "흥구석유",
-                "change": 20.71,
-                "volume": 342.6
+                "code": "066980",
+                "name": "한성크린텍",
+                "change": 16.87,
+                "volume": 252.6
             }
         ],
         "R4C4": [
+            {
+                "code": "001340",
+                "name": "PKC",
+                "change": 29.95,
+                "volume": 2474.5
+            },
             {
                 "code": "024800",
                 "name": "유성티엔에스",
