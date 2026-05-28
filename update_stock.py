@@ -39,9 +39,9 @@ for code in target_codes:
         df_historical = fdr.DataReader(code, start=start_date, end=today_str)
         df_historical.to_csv(file_name)
 
-print("📊 [3단계] 오늘 자 4×4 매트릭스 계산기 가동...")
+print("📊 [3단계] 오늘 자 4×4 매트릭스 계산기 가동 (증권사 상승률 기준)...")
 matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
-today_captured_list = [] # 오늘 포착된 종목들을 장부에 기록하기 위해 모아두는 리스트
+today_captured_list = []
 
 for code in target_codes:
     file_name = f"data_{code}.csv"
@@ -53,25 +53,34 @@ for code in target_codes:
     today_data = df.iloc[-1]
     prev_20_days = df.iloc[-21:-1]
     
-    change_rate = ((today_data['Close'] - today_data['Open']) / today_data['Open']) * 100
+    # [핵심 변경] 증권사 기준: 전일 종가 대비 당일 종가의 상승률
+    prev_close = prev_20_days.iloc[-1]['Close']
+    change_rate = ((today_data['Close'] - prev_close) / prev_close) * 100
+    
+    # 거래량 비율: 최근 20일 평균 대비 당일 거래량
     avg_volume = prev_20_days['Volume'].mean()
     vol_ratio = (today_data['Volume'] / avg_volume) * 100 if avg_volume > 0 else 0
     
-    if change_rate <= 0: continue # 음봉 제외
+    # [필터링 1] 전일 대비 하락하거나 오르지 않은 종목 제외
+    if change_rate <= 0: continue 
     
-    # 매트릭스 위치 선정
+    # [필터링 2] '양봉' 원칙 유지 (어제보다 올랐어도 오늘 시가보다 종가가 낮은 '음봉'이면 제외)
+    # 만약 음봉이든 양봉이든 증권사 기준 상승률만 맞으면 모두 포함하려면 아래 줄을 지우거나 주석(#) 처리하세요.
+    if today_data['Close'] < today_data['Open']: continue 
+    
+    # 매트릭스 위치 선정 (상승률 4구간)
     row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
+    
+    # 매트릭스 위치 선정 (거래량 4구간)
     col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < 500 else 4
     
     stock_name = final_500[final_500['Code'] == code]['Name'].values[0]
     cell_id = f"R{row}C{col}"
     
-    # 1) 오늘 웹페이지에 보여줄 데이터 저장
     matrix_results[cell_id].append({
         "code": code, "name": stock_name, "change": round(change_rate, 2), "volume": round(vol_ratio, 1)
     })
     
-    # 2) 오늘 장부에 기록할 임시 데이터 생성
     today_captured_list.append({
         'Date': today_str, 'Code': code, 'Name': stock_name, 'Cell': cell_id, 'Base_Price': today_data['Close'],
         '1D_Return': None, '3D_Return': None, '5D_Return': None, 'Settled_Count': 0
@@ -80,13 +89,11 @@ for code in target_codes:
 print("📝 [4단계] 최소 자원 추적관찰(Tracking) 장부 정산 가동...")
 history_file = "matrix_history.csv"
 
-# 기존 장부가 있으면 불러오고, 없으면 새로 만듭니다.
 if os.path.exists(history_file):
     df_history = pd.read_csv(history_file)
 else:
     df_history = pd.DataFrame(columns=['Date', 'Code', 'Name', 'Cell', 'Base_Price', '1D_Return', '3D_Return', '5D_Return', 'Settled_Count'])
 
-# [과거 데이터 정산] 아직 정산이 다 안 끝난 항목(Settled_Count < 3)만 찾아서 오늘 가격으로 정산
 df_unsettled = df_history[df_history['Settled_Count'] < 3]
 
 for idx, row_data in df_unsettled.iterrows():
@@ -95,9 +102,8 @@ for idx, row_data in df_unsettled.iterrows():
     if not os.path.exists(file_name): continue
     
     df_stock = pd.read_csv(file_name)
-    # 장부에 기록된 '포착 날짜' 이후의 데이터들만 가져오기
     df_after = df_stock[df_stock.iloc[:, 0] >= row_data['Date']] 
-    passed_days = len(df_after) - 1 # 포착일 다음날부터 경과된 영업일 수
+    passed_days = len(df_after) - 1 
     
     if passed_days >= 1 and pd.isna(df_history.loc[idx, '1D_Return']):
         close_1d = df_after.iloc[1]['Close']
@@ -114,47 +120,36 @@ for idx, row_data in df_unsettled.iterrows():
         df_history.loc[idx, '5D_Return'] = round(((close_5d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
         df_history.loc[idx, 'Settled_Count'] += 1
 
-# [오늘 데이터 추가] 오늘 포착된 종목 리스트를 장부 밑에 합치기
 if today_captured_list:
     df_today_captured = pd.DataFrame(today_captured_list)
     df_history = pd.concat([df_history, df_today_captured], ignore_index=True)
 
-# 정산 완료된 장부 저장
 df_history.to_csv(history_file, index=False)
 
-# [update_stock.py 의 [5단계] 직전 추가 코드]
 print("📊 [4.5단계] 카테고리별 누적 통계(승률) 계산 중...")
 stats_results = {f"R{i}C{j}": {"total": 0, "success": 0, "win_rate": 0} for i in range(1, 5) for j in range(1, 5)}
 
 if os.path.exists(history_file) and not df_history.empty:
-    # 5일 뒤 정산이 완료된 데이터만 기준으로 승률 계산
     df_settled = df_history[df_history['5D_Return'].notna()]
     
     for idx, row_data in df_settled.iterrows():
         cell = row_data['Cell']
         if cell in stats_results:
             stats_results[cell]["total"] += 1
-            # 성공 기준: 5일 이내에 조금이라도 수익이 났거나(+0% 이상), 원하시는 기준(예: +3% 이상) 설정 가능
             if row_data['5D_Return'] > 0: 
                 stats_results[cell]["success"] += 1
 
-    # 승률 퍼센트 변환
     for cell in stats_results:
         tot = stats_results[cell]["total"]
         suc = stats_results[cell]["success"]
         stats_results[cell]["win_rate"] = round((suc / tot) * 100, 1) if tot > 0 else 0
 
-# 최종 합치기
 final_web_data = {
-    "captured": matrix_results,  # 오늘 포착 종목
-    "stats": stats_results       # 칸별 누적 승률
+    "captured": matrix_results, 
+    "stats": stats_results       
 }
 
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
     json.dump(final_web_data, f, ensure_ascii=False, indent=4)
 
-# [5단계] 웹페이지용 최종 JSON 저장 (매트릭스 결과물)
-with open('matrix_data.json', 'w', encoding='utf-8') as f:
-    json.dump(matrix_results, f, ensure_ascii=False, indent=4)
-
-print("🎉 전 프로세스 및 추적 관찰 장부 업데이트가 성공적으로 끝났습니다!")
+print("🎉 증권사 상승률 기준 전 프로세스 및 누적 승률 계산이 성공적으로 끝났습니다!")
