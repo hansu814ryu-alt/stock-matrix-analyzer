@@ -10,8 +10,8 @@ print("🚀 [1단계] KRX 공식 API 기반 시가총액/거래량 스코어링 
 # 1. 날짜 설정 (주말/휴일 방어 로직 포함)
 today = datetime.date.today()
 today_str = today.strftime('%Y%m%d')
-# 가장 최근 영업일 구하기 (주말에 실행되어도 금요일 데이터를 가져오도록)
-b_days = stock.get_business_days_dates((today - datetime.timedelta(days=10)).strftime('%Y%m%d'), today_str)
+# [수정됨] get_business_days_dates -> get_business_days 로 변경
+b_days = stock.get_business_days((today - datetime.timedelta(days=10)).strftime('%Y%m%d'), today_str)
 closest_bdate = b_days[-1].strftime("%Y%m%d")
 
 # 2. 전 종목 데이터 및 시가총액 일괄 조회
