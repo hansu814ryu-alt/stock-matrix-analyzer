@@ -5,7 +5,7 @@ import os
 import json
 import time
 
-print("🚀 [1단계] 깃허브 IP 차단 우회 데이터 스코어링 가동...")
+print("🚀 [1단계] 대형주 누락 방지! 시가총액 + '거래대금(Amount)' 스코어링 가동...")
 
 # 1. 오늘 기준 전 종목 데이터 가져오기 (KRX 차단 우회용 FDR 사용)
 df_krx = fdr.StockListing('KRX')
@@ -14,16 +14,16 @@ df_krx = fdr.StockListing('KRX')
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
 df_krx = df_krx[df_krx['Market'] != 'KONEX']
 
-# 2. 각각 순위 매기기 및 50% 가중치 합산
+# 2. [로직 업그레이드] '단순 거래량' 대신 진짜 돈이 몰린 '거래대금'으로 순위 산정
 df_krx['시총순위'] = df_krx['Marcap'].rank(ascending=False)
-df_krx['거래량순위'] = df_krx['Volume'].rank(ascending=False)
-df_krx['종합점수'] = (df_krx['시총순위'] * 0.5) + (df_krx['거래량순위'] * 0.5)
+df_krx['거래대금순위'] = df_krx['Amount'].rank(ascending=False)
+df_krx['종합점수'] = (df_krx['시총순위'] * 0.5) + (df_krx['거래대금순위'] * 0.5)
 
 # 최정예 500개 종목 추출
 final_500 = df_krx.sort_values(by='종합점수').head(500)
 target_codes = final_500['Code'].tolist()
 
-print(f"🔥 최정예 주도주 {len(target_codes)}개 종목 선별 완료.")
+print(f"🔥 대형 주도주 포함 최정예 {len(target_codes)}개 종목 선별 완료.")
 print("📥 [2단계] 데이터 다이어트 및 증분 업데이트 시작 (API 쿨타임 적용)...")
 
 today_str = datetime.date.today().strftime('%Y-%m-%d')
@@ -48,7 +48,7 @@ for code in target_codes:
     # 서버 부하 및 IP 차단 방지를 위한 미세 딜레이
     time.sleep(0.1)
 
-print("📊 [3단계] 오늘 자 4×4 매트릭스 계산기 가동 (증권사 HTS 상승률 기준)...")
+print("📊 [3단계] 오늘 자 4×4 매트릭스 계산기 가동 (하이브리드 기준)...")
 matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
 today_captured_list = []
 
@@ -62,9 +62,9 @@ for code in target_codes:
     today_data = df.iloc[-1]
     prev_20_days = df.iloc[-21:-1]
     
-    # 1. 캔들 필터: '양봉' 조건 (시가보다 종가가 높은 경우)
-    if today_data['Close'] <= today_data['Open']: 
-        continue
+    # 1. 캔들 필터: [로직 업그레이드] 점상한가/십자도지(시가=종가) 허용
+    if today_data['Close'] < today_data['Open']: 
+        continue # 확실한 음봉일 때만 버립니다.
     
     # 2. 증권사 기준 상승률 산출: (오늘 종가 - 어제 종가) / 어제 종가
     prev_close = prev_20_days.iloc[-1]['Close']
@@ -73,7 +73,7 @@ for code in target_codes:
     if change_rate <= 0: 
         continue 
     
-    # 3. 거래량 산출: (오늘 거래량 / 과거 20일 평균 거래량)
+    # 3. 거래량 산출: [로직 유지] 매트릭스 X축은 순수 물량(Volume) 폭발 비율로 측정
     avg_volume = prev_20_days['Volume'].mean()
     vol_ratio = (today_data['Volume'] / avg_volume) * 100 if avg_volume > 0 else 0
     
@@ -158,4 +158,4 @@ final_web_data = {
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
     json.dump(final_web_data, f, ensure_ascii=False, indent=4)
 
-print("🎉 깃허브 IP 차단 우회 및 최종 데이터 업데이트 완료!")
+print("🎉 하이브리드 필터링 적용 및 최종 데이터 업데이트 완료!")
