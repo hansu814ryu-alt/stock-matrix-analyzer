@@ -7,12 +7,16 @@ import time
 
 print("🚀 [1단계] KRX 공식 API 기반 시가총액/거래량 스코어링 가동...")
 
-# 1. 날짜 설정 (주말/휴일 방어 로직 포함)
+# 1. 날짜 설정 (주말/휴일 방어 로직)
 today = datetime.date.today()
 today_str = today.strftime('%Y%m%d')
-# [수정됨] get_business_days_dates -> get_business_days 로 변경
-b_days = stock.get_business_days((today - datetime.timedelta(days=10)).strftime('%Y%m%d'), today_str)
-closest_bdate = b_days[-1].strftime("%Y%m%d")
+
+# [에러 해결!] pykrx 자체 버그를 피하기 위해 삼성전자(005930) 차트를 활용하여 최근 영업일 추출
+start_date_for_bday = (today - datetime.timedelta(days=10)).strftime('%Y%m%d')
+samsung_df = stock.get_market_ohlcv(start_date_for_bday, today_str, "005930")
+closest_bdate = samsung_df.index[-1].strftime("%Y%m%d")
+
+print(f"📅 최근 기준 영업일 확인 완료: {closest_bdate}")
 
 # 2. 전 종목 데이터 및 시가총액 일괄 조회
 df_ohlcv = stock.get_market_ohlcv(closest_bdate, market="ALL")
@@ -148,42 +152,3 @@ for idx, row_data in df_unsettled.iterrows():
     if passed_days >= 3 and pd.isna(df_history.loc[idx, '3D_Return']):
         close_3d = df_after.iloc[3]['Close'] if len(df_after) > 3 else df_after.iloc[-1]['Close']
         df_history.loc[idx, '3D_Return'] = round(((close_3d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-        df_history.loc[idx, 'Settled_Count'] += 1
-        
-    if passed_days >= 5 and pd.isna(df_history.loc[idx, '5D_Return']):
-        close_5d = df_after.iloc[5]['Close'] if len(df_after) > 5 else df_after.iloc[-1]['Close']
-        df_history.loc[idx, '5D_Return'] = round(((close_5d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-        df_history.loc[idx, 'Settled_Count'] += 1
-
-if today_captured_list:
-    df_today_captured = pd.DataFrame(today_captured_list)
-    df_history = pd.concat([df_history, df_today_captured], ignore_index=True)
-
-df_history.to_csv(history_file, index=False)
-
-print("📊 [4.5단계] 카테고리별 누적 통계(승률) 계산 중...")
-stats_results = {f"R{i}C{j}": {"total": 0, "success": 0, "win_rate": 0} for i in range(1, 5) for j in range(1, 5)}
-
-if not df_history.empty:
-    df_settled = df_history[df_history['5D_Return'].notna()]
-    for idx, row_data in df_settled.iterrows():
-        cell = row_data['Cell']
-        if cell in stats_results:
-            stats_results[cell]["total"] += 1
-            if row_data['5D_Return'] > 0: 
-                stats_results[cell]["success"] += 1
-
-    for cell in stats_results:
-        tot = stats_results[cell]["total"]
-        suc = stats_results[cell]["success"]
-        stats_results[cell]["win_rate"] = round((suc / tot) * 100, 1) if tot > 0 else 0
-
-final_web_data = {
-    "captured": matrix_results,  
-    "stats": stats_results       
-}
-
-with open('matrix_data.json', 'w', encoding='utf-8') as f:
-    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
-
-print("🎉 완벽하게 복구된 코드 업데이트 완료!")
