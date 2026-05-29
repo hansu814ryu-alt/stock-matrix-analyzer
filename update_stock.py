@@ -176,4 +176,14 @@ if not df_history.empty:
     for cell in stats_results:
         tot = stats_results[cell]["total"]
         suc = stats_results[cell]["success"]
-        stats_results[cell]["win_rate"] = round((suc
+        stats_results[cell]["win_rate"] = round((suc / tot) * 100, 1) if tot > 0 else 0
+
+final_web_data = {
+    "captured": matrix_results,  
+    "stats": stats_results       
+}
+
+with open('matrix_data.json', 'w', encoding='utf-8') as f:
+    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
+
+print("🎉 완벽하게 복구된 코드 업데이트 완료!")
