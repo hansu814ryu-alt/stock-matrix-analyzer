@@ -1,7 +1,63 @@
 {
     "captured": {
-        "R1C1": [],
-        "R1C2": [],
+        "R1C1": [
+            {
+                "code": "282330",
+                "name": "BGF리테일",
+                "change": 0.4,
+                "volume": 78.7
+            },
+            {
+                "code": "086900",
+                "name": "메디톡스",
+                "change": 1.8,
+                "volume": 94.2
+            },
+            {
+                "code": "006040",
+                "name": "동원산업",
+                "change": 0.85,
+                "volume": 81.7
+            },
+            {
+                "code": "278280",
+                "name": "천보",
+                "change": 1.03,
+                "volume": 93.5
+            }
+        ],
+        "R1C2": [
+            {
+                "code": "000240",
+                "name": "한국앤컴퍼니",
+                "change": 0.83,
+                "volume": 100.3
+            },
+            {
+                "code": "241710",
+                "name": "코스메카코리아",
+                "change": 1.13,
+                "volume": 105.4
+            },
+            {
+                "code": "035760",
+                "name": "CJ ENM",
+                "change": 0.76,
+                "volume": 112.0
+            },
+            {
+                "code": "012630",
+                "name": "HDC",
+                "change": 0.45,
+                "volume": 100.4
+            },
+            {
+                "code": "253450",
+                "name": "스튜디오드래곤",
+                "change": 0.38,
+                "volume": 131.8
+            }
+        ],
         "R1C3": [
             {
                 "code": "0126Z0",
@@ -17,7 +73,14 @@
             }
         ],
         "R1C4": [],
-        "R2C1": [],
+        "R2C1": [
+            {
+                "code": "127120",
+                "name": "제이에스링크",
+                "change": 5.74,
+                "volume": 68.3
+            }
+        ],
         "R2C2": [],
         "R2C3": [
             {
@@ -27,37 +90,37 @@
                 "volume": 303.7
             },
             {
-                "code": "012210",
-                "name": "삼미금속",
-                "change": 5.5,
-                "volume": 281.3
-            },
-            {
                 "code": "030520",
                 "name": "한글과컴퓨터",
                 "change": 5.7,
                 "volume": 216.2
             }
         ],
-        "R2C4": [
+        "R2C4": [],
+        "R3C1": [
             {
-                "code": "037560",
-                "name": "LG헬로비전",
-                "change": 3.29,
-                "volume": 855.3
+                "code": "079900",
+                "name": "전진건설로봇",
+                "change": 8.86,
+                "volume": 74.6
+            },
+            {
+                "code": "399720",
+                "name": "가온칩스",
+                "change": 6.56,
+                "volume": 79.3
             }
         ],
-        "R3C1": [],
-        "R3C2": [],
+        "R3C2": [
+            {
+                "code": "098070",
+                "name": "한텍",
+                "change": 6.43,
+                "volume": 196.6
+            }
+        ],
         "R3C3": [],
-        "R3C4": [
-            {
-                "code": "216080",
-                "name": "제테마",
-                "change": 9.85,
-                "volume": 874.2
-            }
-        ],
+        "R3C4": [],
         "R4C1": [],
         "R4C2": [],
         "R4C3": [
@@ -66,84 +129,65 @@
                 "name": "두산",
                 "change": 18.8,
                 "volume": 261.1
-            },
-            {
-                "code": "035510",
-                "name": "신세계 I&C",
-                "change": 12.14,
-                "volume": 362.1
             }
         ],
-        "R4C4": [
-            {
-                "code": "317770",
-                "name": "엑스페릭스",
-                "change": 12.4,
-                "volume": 932.1
-            },
-            {
-                "code": "389140",
-                "name": "포바이포",
-                "change": 20.43,
-                "volume": 1419.8
-            }
-        ]
+        "R4C4": []
     },
     "stats": {
         "R1C1": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 32,
+            "success": 11,
+            "win_rate": 34.4
         },
         "R1C2": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 8,
+            "success": 4,
+            "win_rate": 50.0
         },
         "R1C3": {
-            "total": 0,
+            "total": 4,
             "success": 0,
-            "win_rate": 0
+            "win_rate": 0.0
         },
         "R1C4": {
-            "total": 0,
+            "total": 1,
             "success": 0,
-            "win_rate": 0
+            "win_rate": 0.0
         },
         "R2C1": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 10,
+            "success": 6,
+            "win_rate": 60.0
         },
         "R2C2": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 13,
+            "success": 5,
+            "win_rate": 38.5
         },
         "R2C3": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 11,
+            "success": 7,
+            "win_rate": 63.6
         },
         "R2C4": {
-            "total": 0,
+            "total": 1,
             "success": 0,
-            "win_rate": 0
+            "win_rate": 0.0
         },
         "R3C1": {
-            "total": 0,
+            "total": 2,
             "success": 0,
-            "win_rate": 0
+            "win_rate": 0.0
         },
         "R3C2": {
-            "total": 0,
+            "total": 2,
             "success": 0,
-            "win_rate": 0
+            "win_rate": 0.0
         },
         "R3C3": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 4,
+            "success": 3,
+            "win_rate": 75.0
         },
         "R3C4": {
             "total": 0,
@@ -151,19 +195,19 @@
             "win_rate": 0
         },
         "R4C1": {
-            "total": 0,
+            "total": 1,
             "success": 0,
-            "win_rate": 0
+            "win_rate": 0.0
         },
         "R4C2": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 2,
+            "success": 1,
+            "win_rate": 50.0
         },
         "R4C3": {
-            "total": 0,
-            "success": 0,
-            "win_rate": 0
+            "total": 5,
+            "success": 2,
+            "win_rate": 40.0
         },
         "R4C4": {
             "total": 0,
