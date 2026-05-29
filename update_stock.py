@@ -96,4 +96,66 @@ for code in target_codes:
 print("📝 [4단계] 사후 추적관찰(Tracking) 장부 정산 가동...")
 history_file = "matrix_history.csv"
 
-if os
+if os.path.exists(history_file):
+    df_history = pd.read_csv(history_file)
+else:
+    df_history = pd.DataFrame(columns=['Date', 'Code', 'Name', 'Cell', 'Base_Price', '1D_Return', '3D_Return', '5D_Return', 'Settled_Count'])
+
+df_unsettled = df_history[df_history['Settled_Count'] < 3]
+
+for idx, row_data in df_unsettled.iterrows():
+    code = str(row_data['Code']).zfill(6)
+    file_name = f"data_{code}.csv"
+    if not os.path.exists(file_name): continue
+    
+    df_stock = pd.read_csv(file_name)
+    df_after = df_stock[df_stock.iloc[:, 0] >= row_data['Date']] 
+    passed_days = len(df_after) - 1 
+    
+    if passed_days >= 1 and pd.isna(df_history.loc[idx, '1D_Return']):
+        close_1d = df_after.iloc[1]['Close']
+        df_history.loc[idx, '1D_Return'] = round(((close_1d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
+        df_history.loc[idx, 'Settled_Count'] += 1
+        
+    if passed_days >= 3 and pd.isna(df_history.loc[idx, '3D_Return']):
+        close_3d = df_after.iloc[3]['Close'] if len(df_after) > 3 else df_after.iloc[-1]['Close']
+        df_history.loc[idx, '3D_Return'] = round(((close_3d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
+        df_history.loc[idx, 'Settled_Count'] += 1
+        
+    if passed_days >= 5 and pd.isna(df_history.loc[idx, '5D_Return']):
+        close_5d = df_after.iloc[5]['Close'] if len(df_after) > 5 else df_after.iloc[-1]['Close']
+        df_history.loc[idx, '5D_Return'] = round(((close_5d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
+        df_history.loc[idx, 'Settled_Count'] += 1
+
+if today_captured_list:
+    df_today_captured = pd.DataFrame(today_captured_list)
+    df_history = pd.concat([df_history, df_today_captured], ignore_index=True)
+
+df_history.to_csv(history_file, index=False)
+
+print("📊 [4.5단계] 카테고리별 누적 통계(승률) 계산 중...")
+stats_results = {f"R{i}C{j}": {"total": 0, "success": 0, "win_rate": 0} for i in range(1, 5) for j in range(1, 5)}
+
+if not df_history.empty:
+    df_settled = df_history[df_history['5D_Return'].notna()]
+    for idx, row_data in df_settled.iterrows():
+        cell = row_data['Cell']
+        if cell in stats_results:
+            stats_results[cell]["total"] += 1
+            if row_data['5D_Return'] > 0: 
+                stats_results[cell]["success"] += 1
+
+    for cell in stats_results:
+        tot = stats_results[cell]["total"]
+        suc = stats_results[cell]["success"]
+        stats_results[cell]["win_rate"] = round((suc / tot) * 100, 1) if tot > 0 else 0
+
+final_web_data = {
+    "captured": matrix_results,  
+    "stats": stats_results       
+}
+
+with open('matrix_data.json', 'w', encoding='utf-8') as f:
+    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
+
+print("🎉 깃허브 IP 차단 우회 및 최종 데이터 업데이트 완료!")
