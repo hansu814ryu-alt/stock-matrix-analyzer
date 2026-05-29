@@ -5,30 +5,26 @@ import os
 import json
 import time
 
-print("🚀 [1단계] 대형주 누락 방지! 시가총액 + '거래대금(Amount)' 스코어링 가동...")
+print("🚀 [1단계] KRX 전체 종목(전수조사) 필터링 가동...")
 
-# 1. 오늘 기준 전 종목 데이터 가져오기 (KRX 차단 우회용 FDR 사용)
+# 1. 오늘 기준 전 종목 데이터 가져오기 
 df_krx = fdr.StockListing('KRX')
 
 # [중복 및 노이즈 제거] 우선주 및 코넥스 시장 종목 원천 배제
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
 df_krx = df_krx[df_krx['Market'] != 'KONEX']
 
-# 2. [로직 업그레이드] '단순 거래량' 대신 진짜 돈이 몰린 '거래대금'으로 순위 산정
+# [로직 변경] Top 500 컷오프 삭제! 전체 종목을 타겟으로 설정 (약 2,000여 개)
+# 단, 대형주/중소형주 거래량 기준(300% vs 500%)을 나누기 위해 시가총액 순위표만 미리 만들어 둡니다.
 df_krx['시총순위'] = df_krx['Marcap'].rank(ascending=False)
-df_krx['거래대금순위'] = df_krx['Amount'].rank(ascending=False)
-df_krx['종합점수'] = (df_krx['시총순위'] * 0.5) + (df_krx['거래대금순위'] * 0.5)
+target_codes = df_krx['Code'].tolist()
 
-# 최정예 500개 종목 추출
-final_500 = df_krx.sort_values(by='종합점수').head(500)
-target_codes = final_500['Code'].tolist()
-
-print(f"🔥 대형 주도주 포함 최정예 {len(target_codes)}개 종목 선별 완료.")
+print(f"🔥 조건 없이 전체 {len(target_codes)}개 종목 전수조사 대상 확정.")
 print("📥 [2단계] 데이터 다이어트 및 증분 업데이트 시작 (API 쿨타임 적용)...")
 
 today_str = datetime.date.today().strftime('%Y-%m-%d')
 
-# 3. 500개 종목을 돌면서 데이터 업데이트
+# 2. 전체 종목을 돌면서 데이터 업데이트
 for code in target_codes:
     file_name = f"data_{code}.csv"
     
@@ -41,6 +37,7 @@ for code in target_codes:
                 df_updated = pd.concat([df_existing, df_today])
                 df_updated.to_csv(file_name)
     else:
+        # 최초 1회 실행 시 5년 치 수집
         start_date = (datetime.date.today() - datetime.timedelta(days=5*365)).strftime('%Y-%m-%d')
         df_historical = fdr.DataReader(code, start=start_date, end=today_str)
         df_historical.to_csv(file_name)
@@ -48,7 +45,7 @@ for code in target_codes:
     # 서버 부하 및 IP 차단 방지를 위한 미세 딜레이
     time.sleep(0.1)
 
-print("📊 [3단계] 오늘 자 4×4 매트릭스 계산기 가동 (하이브리드 기준)...")
+print("📊 [3단계] 4×4 매트릭스 계산기 가동 (전체 종목 대상)...")
 matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
 today_captured_list = []
 
@@ -62,9 +59,9 @@ for code in target_codes:
     today_data = df.iloc[-1]
     prev_20_days = df.iloc[-21:-1]
     
-    # 1. 캔들 필터: [로직 업그레이드] 점상한가/십자도지(시가=종가) 허용
+    # 1. 캔들 필터: 점상한가/십자도지(시가=종가) 허용 (확실한 음봉만 탈락)
     if today_data['Close'] < today_data['Open']: 
-        continue # 확실한 음봉일 때만 버립니다.
+        continue
     
     # 2. 증권사 기준 상승률 산출: (오늘 종가 - 어제 종가) / 어제 종가
     prev_close = prev_20_days.iloc[-1]['Close']
@@ -73,15 +70,21 @@ for code in target_codes:
     if change_rate <= 0: 
         continue 
     
-    # 3. 거래량 산출: [로직 유지] 매트릭스 X축은 순수 물량(Volume) 폭발 비율로 측정
+    # 3. 거래량 산출: (오늘 거래량 / 과거 20일 평균 거래량)
     avg_volume = prev_20_days['Volume'].mean()
     vol_ratio = (today_data['Volume'] / avg_volume) * 100 if avg_volume > 0 else 0
     
+    # 종목의 체급(시총순위) 확인
+    mc_rank = df_krx[df_krx['Code'] == code]['시총순위'].values[0]
+    
+    # 대형주(100위 이내)는 300%를 폭발 기준으로, 중소형주는 500%를 폭발 기준으로 적용
+    c4_threshold = 300 if mc_rank <= 100 else 500
+    
     # 매트릭스 위치 선정 
     row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
-    col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < 500 else 4
+    col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < c4_threshold else 4
     
-    stock_name = final_500[final_500['Code'] == code]['Name'].values[0]
+    stock_name = df_krx[df_krx['Code'] == code]['Name'].values[0]
     cell_id = f"R{row}C{col}"
     
     matrix_results[cell_id].append({
@@ -158,4 +161,4 @@ final_web_data = {
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
     json.dump(final_web_data, f, ensure_ascii=False, indent=4)
 
-print("🎉 하이브리드 필터링 적용 및 최종 데이터 업데이트 완료!")
+print("🎉 전체 종목 전수조사 적용 완료! 이제 놓치는 주도주는 없습니다.")
