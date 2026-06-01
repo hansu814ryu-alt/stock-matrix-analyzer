@@ -2,8 +2,8 @@ name: Daily Stock Data Update
 
 on:
   schedule:
-    # 1. 자동 실행: 한국 시간(KST) 매일 오후 17:00 (UTC 08:00)
-    - cron: '0 8 * * *'
+    # 1. 자동 실행: 한국 시간(KST) 18시 30분 (UTC 09:30)
+    - cron: '30 9 * * *'
   workflow_dispatch: 
     # 2. 당장 실행: 내가 원할 때 깃허브 화면에서 언제든 'Run workflow' 버튼으로 즉시 실행
 
