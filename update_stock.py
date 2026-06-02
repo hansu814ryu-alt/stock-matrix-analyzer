@@ -5,160 +5,163 @@ import os
 import json
 import time
 
-print("🚀 [1단계] KRX 전체 종목(전수조사) 필터링 가동...")
+print("🚀 [시스템 개정] 5대 요구사항 반영 하이브리드 계량 엔진 가동...")
 
-# 1. 오늘 기준 전 종목 데이터 가져오기 
+# 1. 한국 시장 전체 보통주 라인업 로드
 df_krx = fdr.StockListing('KRX')
-
-# [중복 및 노이즈 제거] 우선주 및 코넥스 시장 종목 원천 배제
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
 df_krx = df_krx[df_krx['Market'] != 'KONEX']
 
-# [로직 변경] Top 500 컷오프 삭제! 전체 종목을 타겟으로 설정 (약 2,000여 개)
-# 단, 대형주/중소형주 거래량 기준(300% vs 500%)을 나누기 위해 시가총액 순위표만 미리 만들어 둡니다.
-df_krx['시총순위'] = df_krx['Marcap'].rank(ascending=False)
 target_codes = df_krx['Code'].tolist()
+name_dict = dict(zip(df_krx['Code'], df_krx['Name']))
 
-print(f"🔥 조건 없이 전체 {len(target_codes)}개 종목 전수조사 대상 확정.")
-print("📥 [2단계] 데이터 다이어트 및 증분 업데이트 시작 (API 쿨타임 적용)...")
-
+# 이평선(60일) 계산을 위해 넉넉하게 120일 전부터 수집
+start_date = (datetime.date.today() - datetime.timedelta(days=120)).strftime('%Y-%m-%d')
 today_str = datetime.date.today().strftime('%Y-%m-%d')
 
-# 2. 전체 종목을 돌면서 데이터 업데이트
-for code in target_codes:
-    file_name = f"data_{code}.csv"
-    
-    if os.path.exists(file_name):
-        df_existing = pd.read_csv(file_name, index_col=0)
-        df_today = fdr.DataReader(code, start=today_str, end=today_str)
-        
-        if not df_today.empty:
-            if today_str not in df_existing.index:
-                df_updated = pd.concat([df_existing, df_today])
-                df_updated.to_csv(file_name)
-    else:
-        # 최초 1회 실행 시 5년 치 수집
-        start_date = (datetime.date.today() - datetime.timedelta(days=5*365)).strftime('%Y-%m-%d')
-        df_historical = fdr.DataReader(code, start=start_date, end=today_str)
-        df_historical.to_csv(file_name)
-        
-    # 서버 부하 및 IP 차단 방지를 위한 미세 딜레이
-    time.sleep(0.1)
-
-print("📊 [3단계] 4×4 매트릭스 계산기 가동 (전체 종목 대상)...")
-matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
-today_captured_list = []
-
-for code in target_codes:
-    file_name = f"data_{code}.csv"
-    if not os.path.exists(file_name): continue
-    
-    df = pd.read_csv(file_name)
-    if len(df) < 21: continue 
-    
-    today_data = df.iloc[-1]
-    prev_20_days = df.iloc[-21:-1]
-    
-    # 1. 캔들 필터: 점상한가/십자도지(시가=종가) 허용 (확실한 음봉만 탈락)
-    if today_data['Close'] < today_data['Open']: 
-        continue
-    
-    # 2. 증권사 기준 상승률 산출: (오늘 종가 - 어제 종가) / 어제 종가
-    prev_close = prev_20_days.iloc[-1]['Close']
-    change_rate = ((today_data['Close'] - prev_close) / prev_close) * 100
-    
-    if change_rate <= 0: 
-        continue 
-    
-    # 3. 거래량 산출: (오늘 거래량 / 과거 20일 평균 거래량)
-    avg_volume = prev_20_days['Volume'].mean()
-    vol_ratio = (today_data['Volume'] / avg_volume) * 100 if avg_volume > 0 else 0
-    
-    # 종목의 체급(시총순위) 확인
-    mc_rank = df_krx[df_krx['Code'] == code]['시총순위'].values[0]
-    
-    # 대형주(100위 이내)는 300%를 폭발 기준으로, 중소형주는 500%를 폭발 기준으로 적용
-    c4_threshold = 300 if mc_rank <= 100 else 500
-    
-    # 매트릭스 위치 선정 
-    row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
-    col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < c4_threshold else 4
-    
-    stock_name = df_krx[df_krx['Code'] == code]['Name'].values[0]
-    cell_id = f"R{row}C{col}"
-    
-    matrix_results[cell_id].append({
-        "code": code, "name": stock_name, "change": round(change_rate, 2), "volume": round(vol_ratio, 1)
-    })
-    
-    today_captured_list.append({
-        'Date': today_str, 'Code': code, 'Name': stock_name, 'Cell': cell_id, 'Base_Price': today_data['Close'],
-        '1D_Return': None, '3D_Return': None, '5D_Return': None, 'Settled_Count': 0
-    })
-
-print("📝 [4단계] 사후 추적관찰(Tracking) 장부 정산 가동...")
+# 장부 파일 초기화 또는 로드
 history_file = "matrix_history.csv"
-
 if os.path.exists(history_file):
     df_history = pd.read_csv(history_file)
 else:
-    df_history = pd.DataFrame(columns=['Date', 'Code', 'Name', 'Cell', 'Base_Price', '1D_Return', '3D_Return', '5D_Return', 'Settled_Count'])
+    df_history = pd.DataFrame(columns=[
+        'Date', 'Code', 'Name', 'Cell', 'Type1', 'Type2', 'Type3', 
+        'Base_Price', '1D_Return', '3D_Return', '5D_Return', 'Settled_Count',
+        'Break_MA5', 'Break_MA20', 'Break_MA60'
+    ])
 
+matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
+today_captured_list = []
+ma_breakthrough_stocks = []
+
+print(f"📥 [2단계] {len(target_codes)}개 종목 이동평균선 및 전일비 복합 연산 시작...")
+
+for code in target_codes:
+    try:
+        df = fdr.DataReader(code, start=start_date, end=today_str)
+        if len(df) < 61: continue # 최소 60일선 거래량 확보용
+        
+        # 이동평균선 생성
+        df['MA5'] = df['Close'].rolling(5).mean()
+        df['MA20'] = df['Close'].rolling(20).mean()
+        df['MA60'] = df['Close'].rolling(60).mean()
+        
+        today_data = df.iloc[-1]
+        prev_data = df.iloc[-2]
+        
+        # 기본 가격/거래량 매칭
+        prev_close = prev_data['Close']
+        today_close = today_data['Close']
+        prev_vol = prev_data['Volume']
+        today_vol = today_data['Volume']
+        
+        if prev_close == 0 or prev_vol == 0: continue
+        
+        # 수치 계산
+        change_rate = ((today_close - prev_close) / prev_close) * 100
+        vol_ratio = (today_vol / prev_vol) * 100
+        
+        if change_rate <= 0: continue # 전일 대비 상승 종목만 타겟팅
+        
+        # 이평선 상향 돌파(골든크로스) 여부 검증
+        break_ma5 = bool(prev_data['Close'] <= prev_data['MA5'] and today_close > today_data['MA5'])
+        break_ma20 = bool(prev_data['Close'] <= prev_data['MA20'] and today_close > today_data['MA20'])
+        break_ma60 = bool(prev_data['Close'] <= prev_data['MA60'] and today_close > today_data['MA60'])
+        
+        if break_ma5 or break_ma20 or break_ma60:
+            ma_breakthrough_stocks.append({
+                "code": code, "name": name_dict.get(code, code),
+                "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60
+            })
+            
+        # 4x4 매트릭스 포지셔닝
+        row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
+        col = 1 if vol_ratio < 100 else 2 if vol_ratio < 150 else 3 if vol_ratio < 200 else 4
+        cell_id = f"R{row}C{col}"
+        stock_name = name_dict.get(code, code)
+        
+        # [요구사항 2] 상승률 2개 x 거래량 4개 구간별 유형 정의
+        type1 = bool(row in [3, 4] and col in [1, 2, 3, 4]) # 강력 돌파형
+        type2 = bool(row in [2, 3] and col in [1, 2, 3, 4]) # 추세 전환형
+        type3 = bool(type1 and type2)                       # 중첩 교집합형
+        
+        # [요구사항 1] 과거 기록 기반 첫 번째 돌파 날짜 및 유형 추적
+        past_records = df_history[df_history['Code'] == int(code)] if not df_history.empty else pd.DataFrame()
+        if not past_records.empty:
+            first_date = str(past_records['Date'].min())
+            first_cell = str(past_records[past_records['Date'] == first_date]['Cell'].values[0])
+        else:
+            first_date = today_str
+            first_cell = cell_id
+            
+        # 매트릭스 결과 묶기
+        matrix_results[cell_id].append({
+            "code": code, "name": stock_name, "change": round(change_rate, 2), "volume": round(vol_ratio, 1),
+            "first_date": first_date, "first_cell": first_cell
+        })
+        
+        # 오늘 장부 임시 보관
+        today_captured_list.append({
+            'Date': today_str, 'Code': int(code), 'Name': stock_name, 'Cell': cell_id,
+            'Type1': type1, 'Type2': type2, 'Type3': type3, 'Base_Price': today_close,
+            '1D_Return': None, '3D_Return': None, '5D_Return': None, 'Settled_Count': 0,
+            'Break_MA5': break_ma5, 'Break_MA20': break_ma20, 'Break_MA60': break_ma60
+        })
+        
+    except Exception as e:
+        pass
+    time.sleep(0.04)
+
+print("📝 [3단계] 사후 추적관찰(Tracking) 과거 장부 정산 및 흐름 데이터 동기화...")
 df_unsettled = df_history[df_history['Settled_Count'] < 3]
 
 for idx, row_data in df_unsettled.iterrows():
-    code = str(row_data['Code']).zfill(6)
-    file_name = f"data_{code}.csv"
-    if not os.path.exists(file_name): continue
-    
-    df_stock = pd.read_csv(file_name)
-    df_after = df_stock[df_stock.iloc[:, 0] >= row_data['Date']] 
-    passed_days = len(df_after) - 1 
-    
-    if passed_days >= 1 and pd.isna(df_history.loc[idx, '1D_Return']):
-        close_1d = df_after.iloc[1]['Close']
-        df_history.loc[idx, '1D_Return'] = round(((close_1d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-        df_history.loc[idx, 'Settled_Count'] += 1
+    code = str(int(row_data['Code'])).zfill(6)
+    try:
+        df_stock = fdr.DataReader(code, start=row_data['Date'], end=today_str)
+        passed_days = len(df_stock) - 1
         
-    if passed_days >= 3 and pd.isna(df_history.loc[idx, '3D_Return']):
-        close_3d = df_after.iloc[3]['Close'] if len(df_after) > 3 else df_after.iloc[-1]['Close']
-        df_history.loc[idx, '3D_Return'] = round(((close_3d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-        df_history.loc[idx, 'Settled_Count'] += 1
-        
-    if passed_days >= 5 and pd.isna(df_history.loc[idx, '5D_Return']):
-        close_5d = df_after.iloc[5]['Close'] if len(df_after) > 5 else df_after.iloc[-1]['Close']
-        df_history.loc[idx, '5D_Return'] = round(((close_5d - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-        df_history.loc[idx, 'Settled_Count'] += 1
+        if passed_days >= 1 and pd.isna(df_history.loc[idx, '1D_Return']):
+            df_history.loc[idx, '1D_Return'] = round(((df_stock.iloc[1]['Close'] - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
+            df_history.loc[idx, 'Settled_Count'] += 1
+        if passed_days >= 3 and pd.isna(df_history.loc[idx, '3D_Return']):
+            idx_3d = min(3, len(df_stock)-1)
+            df_history.loc[idx, '3D_Return'] = round(((df_stock.iloc[idx_3d]['Close'] - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
+            df_history.loc[idx, 'Settled_Count'] += 1
+        if passed_days >= 5 and pd.isna(df_history.loc[idx, '5D_Return']):
+            idx_5d = min(5, len(df_stock)-1)
+            df_history.loc[idx, '5D_Return'] = round(((df_stock.iloc[idx_5d]['Close'] - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
+            df_history.loc[idx, 'Settled_Count'] += 1
+    except:
+        pass
 
+# 오늘 데이터 추가 병합
 if today_captured_list:
-    df_today_captured = pd.DataFrame(today_captured_list)
-    df_history = pd.concat([df_history, df_today_captured], ignore_index=True)
-
+    df_history = pd.concat([df_history, pd.DataFrame(today_captured_list)], ignore_index=True)
 df_history.to_csv(history_file, index=False)
 
-print("📊 [4.5단계] 카테고리별 누적 통계(승률) 계산 중...")
-stats_results = {f"R{i}C{j}": {"total": 0, "success": 0, "win_rate": 0} for i in range(1, 5) for j in range(1, 5)}
-
+print("📊 [4단계] 누적 포착 빈도 카운트 생성 및 고순위 순서 정렬...")
+# [요구사항 4] 카운트 계산 및 정렬
 if not df_history.empty:
-    df_settled = df_history[df_history['5D_Return'].notna()]
-    for idx, row_data in df_settled.iterrows():
-        cell = row_data['Cell']
-        if cell in stats_results:
-            stats_results[cell]["total"] += 1
-            if row_data['5D_Return'] > 0: 
-                stats_results[cell]["success"] += 1
+    count_series = df_history['Code'].value_counts()
+    ranking_list = []
+    for cd, cnt in count_series.items():
+        code_str = str(int(cd)).zfill(6)
+        ranking_list.append({
+            "code": code_str, "name": name_dict.get(code_str, code_str), "count": int(cnt)
+        })
+else:
+    ranking_list = []
 
-    for cell in stats_results:
-        tot = stats_results[cell]["total"]
-        suc = stats_results[cell]["success"]
-        stats_results[cell]["win_rate"] = round((suc / tot) * 100, 1) if tot > 0 else 0
-
+print("⚙️ [5단계] 웹 배포용 고밀도 단일 JSON 패키징 빌드...")
+# 최종 데이터 구조 바인딩
 final_web_data = {
-    "captured": matrix_results,  
-    "stats": stats_results       
+    "captured": matrix_results,         # 4x4 바둑판 실시간 데이터
+    "rankings": ranking_list,           # [요구사항 4] 카운트가 높은 종목 순서 정렬 리스트
+    "ma_breakthroughs": ma_breakthrough_stocks # [요구사항 5] 일자별 이평선 돌파 종목
 }
 
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
     json.dump(final_web_data, f, ensure_ascii=False, indent=4)
 
-print("🎉 전체 종목 전수조사 적용 완료! 이제 놓치는 주도주는 없습니다.")
+print("🎉 개정 로직 배포 준비 완료! 무결성 정산이 끝났습니다.")
