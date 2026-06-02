@@ -88,7 +88,7 @@ for code in target_codes:
         type2 = bool(row in [2, 3] and col in [1, 2, 3, 4]) # 추세 전환형
         type3 = bool(type1 and type2)                       # 중첩 교집합형
         
-        # 과거 기록 기반 첫 번째 돌파 날짜 및 유형 추적 (문자열 매칭으로 에러 방지)
+        # 과거 기록 기반 첫 번째 돌파 날짜 및 유형 추적
         past_records = df_history[df_history['Code'] == code_str] if not df_history.empty else pd.DataFrame()
         if not past_records.empty:
             first_date = str(past_records['Date'].min())
@@ -147,4 +147,23 @@ print("📊 [4단계] 누적 포착 빈도 카운트 생성 및 고순위 순서
 if not df_history.empty:
     count_series = df_history['Code'].value_counts()
     ranking_list = []
-    for cd, cnt in count_series.items
+    # [버그 수정 완료] .items 뒤에 명확하게 괄호 () 바인딩 추가
+    for cd, cnt in count_series.items():
+        code_str = str(cd).zfill(6)
+        ranking_list.append({
+            "code": code_str, "name": name_dict.get(code_str, code_str), "count": int(cnt)
+        })
+else:
+    ranking_list = []
+
+print("⚙️ [5단계] 웹 배포용 고밀도 단일 JSON 패키징 빌드...")
+final_web_data = {
+    "captured": matrix_results,         
+    "rankings": ranking_list,           
+    "ma_breakthroughs": ma_breakthrough_stocks 
+}
+
+with open('matrix_data.json', 'w', encoding='utf-8') as f:
+    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
+
+print("🎉 개정 로직 배포 준비 완료! 무결성 정산이 끝났습니다.")
