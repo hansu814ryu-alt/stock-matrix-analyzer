@@ -143,11 +143,15 @@ if today_captured_list:
     df_history = pd.concat([df_history, pd.DataFrame(today_captured_list)], ignore_index=True)
 df_history.to_csv(history_file, index=False)
 
-print("📊 [4단계] 누적 포착 빈도 카운트 생성 및 고순위 순서 정렬...")
+print("📊 [4단계] 주도주 누적 포착 카운트 생성 (R2C2 ~ R4C4 타겟팅)...")
 if not df_history.empty:
-    count_series = df_history['Code'].value_counts()
+    # [요구사항 반영] 잔파동(R1)과 거래량 감소(C1) 구역을 제외한 진짜 주도주 영역만 필터링
+    valid_cells = [f"R{r}C{c}" for r in range(2, 5) for c in range(2, 5)]
+    df_valid_history = df_history[df_history['Cell'].isin(valid_cells)]
+    
+    count_series = df_valid_history['Code'].value_counts()
     ranking_list = []
-    # [버그 수정 완료] .items 뒤에 명확하게 괄호 () 바인딩 추가
+    
     for cd, cnt in count_series.items():
         code_str = str(cd).zfill(6)
         ranking_list.append({
