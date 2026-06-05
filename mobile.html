@@ -25,4 +25,32 @@
         header p { color: var(--text-muted); font-size: 0.8rem; }
 
         /* 모바일용 메인 레이아웃 (1단 세로 배치) */
-        .section-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding:
+        .section-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .section-title { font-size: 1.1rem; margin-bottom: 12px; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 5px; font-weight: bold; }
+        .section-title.red { color: #f43f5e; border-color: #f43f5e; }
+        .section-title.green { color: #10b981; border-color: #10b981; }
+        .section-title.yellow { color: var(--favorite); border-color: var(--favorite); }
+
+        /* 모바일 매트릭스 리스트 */
+        .matrix-grid { display: flex; flex-direction: column; gap: 10px; }
+        .matrix-cell { background-color: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; }
+        .cell-header { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; }
+        .cell-header span:last-child { font-size: 0.75rem; color: var(--text-muted); }
+        
+        .stock-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .stock-item { font-size: 0.9rem; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .stock-item:active { background: var(--border-color); }
+        .stock-change { font-weight: bold; }
+
+        /* 이평선 및 즐겨찾기 리스트 */
+        .ma-list, .journal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .ma-badges { display: flex; gap: 4px; margin-top: 4px; }
+        .badge { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; font-weight: bold; color: #fff; }
+        .bg-ma5 { background-color: #3b82f6; } .bg-ma20 { background-color: #eab308; } .bg-ma60 { background-color: #a855f7; }
+
+        /* 일자별 랭킹 보드 */
+        .ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .ranking-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .rank-info { display: flex; flex-direction: column; }
+        .rank-name { font-size: 0.85rem; font-weight: bold; }
+        .rank-code { font-size: 0.7rem; color: var
