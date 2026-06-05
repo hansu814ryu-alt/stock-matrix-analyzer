@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>주도주 트래킹 하이브리드 대시보드</title>
+
+    <script>
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "mobile.html"; 
+        }
+    </script>
+
     <style>
         :root {
             --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border-color: #334155; --accent: #38bdf8;
+            --border-color: #334155; --accent: #38bdf8; --favorite: #fbbf24;
             --r4: #ef4444; --r3: #f97316; --r2: #f59e0b; --r1: #10b981;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
@@ -35,6 +42,10 @@
         .badge { font-size: 0.7rem; padding: 1px 4px; border-radius: 3px; font-weight: bold; color: #fff; }
         .bg-ma5 { background-color: #3b82f6; } .bg-ma20 { background-color: #eab308; } .bg-ma60 { background-color: #a855f7; }
 
+        /* [신규] 즐겨찾기 보드 */
+        .favorite-section { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+        .favorite-section h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--favorite); border-bottom: 2px solid var(--favorite); padding-bottom: 5px; }
+        
         .ranking-section { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
         .ranking-section h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 5px; }
         .ranking-container { max-height: 350px; overflow-y: auto; padding-right: 5px; }
@@ -65,18 +76,20 @@
         .journal-img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border-color); display: block; }
         .journal-del-btn { position: absolute; top: 10px; right: 12px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; }
         
-        /* 매매일지 내부 렌더링용 차트 컨테이너 */
         .journal-chart-wrapper { position: relative; width: 100%; max-width: 400px; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: #fff; }
         .journal-chart-wrapper img { width: 100%; display: block; }
         .journal-chart-wrapper canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
-        /* 팝업 모달창 (폭 넓힘) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 20px 0; }
         .modal-content { background: var(--card-bg); border: 2px solid var(--accent); border-radius: 12px; padding: 25px; width: 450px; text-align: center; position: relative; margin: auto; }
         .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; }
-        .modal-title { font-size: 1.3rem; margin-bottom: 15px; color: var(--accent); font-weight: bold; }
         
-        /* [신규] 모달 내 차트 그리기 영역 */
+        /* 모달 제목 및 즐겨찾기 버튼 */
+        .modal-title-wrapper { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .modal-title { font-size: 1.3rem; color: var(--accent); font-weight: bold; margin: 0; }
+        .btn-favorite-toggle { font-size: 1.4rem; cursor: pointer; color: var(--text-muted); user-select: none; transition: 0.2s; }
+        .btn-favorite-toggle.active { color: var(--favorite); }
+
         .chart-draw-area { position: relative; width: 100%; height: 230px; background: #fff; border-radius: 6px; border: 2px solid var(--border-color); margin-bottom: 15px; overflow: hidden; }
         .chart-draw-area img { width: 100%; height: 100%; object-fit: fill; display: block; user-select: none; }
         .chart-draw-area canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
@@ -125,6 +138,13 @@
         </div>
     </div>
 
+    <div class="favorite-section">
+        <h2>⭐ 나의 즐겨찾기 종목</h2>
+        <div class="ranking-grid" id="favoriteGrid">
+            <div style="color:var(--text-muted); font-size:0.9rem;">종목 클릭 후 별(☆)을 눌러 즐겨찾기를 추가하세요.</div>
+        </div>
+    </div>
+
     <div class="ranking-section">
         <h2>🔥 일자별 포착 주도주 랭킹 (누적 카운트)</h2>
         <div class="ranking-container" id="rankingContainer"></div>
@@ -147,7 +167,11 @@
     <div class="modal" id="stockModal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
-            <div class="modal-title" id="mName">종목명</div>
+            
+            <div class="modal-title-wrapper">
+                <h2 class="modal-title" id="mName">종목명</h2>
+                <span id="btnFavoriteToggle" class="btn-favorite-toggle" onclick="toggleFavorite()">☆</span>
+            </div>
             
             <div class="chart-draw-area" id="chartArea">
                 <img id="mChartImg" src="" alt="차트">
@@ -177,12 +201,13 @@
     <script>
         let globalCapturedData = {};
         let currentStockCode = '';
+        let currentStockName = '';
         
         // Canvas 드로잉 변수
         const canvas = document.getElementById('mChartCanvas');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
-        let drawnLines = []; // [{startX, startY, endX, endY}] 저장용
+        let drawnLines = []; 
 
         const rowTitles = { 4: "상승률 12% 이상", 3: "상승률 6% ~ 12%", 2: "상승률 3% ~ 6%", 1: "상승률 3% 미만" };
 
@@ -203,7 +228,6 @@
             }
         }
 
-        // 마우스/터치 드로잉 이벤트 리스너 등록
         function initCanvasEvents() {
             const startDrawing = (e) => {
                 e.preventDefault();
@@ -211,7 +235,7 @@
                 const rect = canvas.getBoundingClientRect();
                 const x = (e.clientX || e.touches[0].clientX) - rect.left;
                 const y = (e.clientY || e.touches[0].clientY) - rect.top;
-                drawnLines = [{ startX: x, startY: y, endX: x, endY: y }]; // 새로운 선 1개만 허용(수정 원하면 푸시)
+                drawnLines = [{ startX: x, startY: y, endX: x, endY: y }]; 
             };
 
             const draw = (e) => {
@@ -244,7 +268,7 @@
                 ctx.beginPath();
                 ctx.moveTo(line.startX, line.startY);
                 ctx.lineTo(line.endX, line.endY);
-                ctx.strokeStyle = '#ef4444'; // 빨간색 두꺼운 추세선
+                ctx.strokeStyle = '#ef4444'; 
                 ctx.lineWidth = 3;
                 ctx.stroke();
             }
@@ -255,12 +279,10 @@
             redrawCanvas();
         }
 
-        // 그린 차트 데이터를 매매일지 폼으로 전송
         function sendChartToJournal() {
             if (drawnLines.length === 0) {
                 alert("차트에 선을 하나 그어주세요!"); return;
             }
-            // 브라우저 크기에 독립적이도록 상대 좌표(비율)로 변환
             const rect = canvas.getBoundingClientRect();
             const relLine = {
                 startX: drawnLines[0].startX / rect.width,
@@ -269,9 +291,7 @@
                 endY: drawnLines[0].endY / rect.height
             };
 
-            // 전역 변수로 임시 보관 (저장 시 꺼내씀)
             window.tempChartData = { code: currentStockCode, line: relLine };
-            
             document.getElementById('journalTitle').value = `[차트분석] ${document.getElementById('mName').innerText} 추세 돌파`;
             document.getElementById('journalContent').value = "차트에 그은 핵심 추세선을 돌파했습니다. 관찰 요망.";
             
@@ -290,8 +310,57 @@
             else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-", first_cell: "-" });
         }
 
+        // [신규] 즐겨찾기 토글 기능
+        function toggleFavorite() {
+            let favs = JSON.parse(localStorage.getItem('favorite_stocks') || '{}');
+            const btn = document.getElementById('btnFavoriteToggle');
+
+            if (favs[currentStockCode]) {
+                // 이미 즐겨찾기인 경우 해제
+                delete favs[currentStockCode];
+                btn.innerText = '☆';
+                btn.classList.remove('active');
+            } else {
+                // 즐겨찾기 추가
+                favs[currentStockCode] = currentStockName;
+                btn.innerText = '⭐';
+                btn.classList.add('active');
+            }
+            
+            localStorage.setItem('favorite_stocks', JSON.stringify(favs));
+            renderFavorites();
+        }
+
+        // [신규] 즐겨찾기 보드 렌더링
+        function renderFavorites() {
+            const container = document.getElementById('favoriteGrid');
+            container.innerHTML = '';
+            const favs = JSON.parse(localStorage.getItem('favorite_stocks') || '{}');
+
+            if (Object.keys(favs).length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem;">종목 클릭 후 별(☆)을 눌러 즐겨찾기를 추가하세요.</div>';
+                return;
+            }
+
+            for (const [code, name] of Object.entries(favs)) {
+                const card = document.createElement('div');
+                card.className = 'ranking-card';
+                card.onclick = () => triggerModalByCode(code, name);
+                card.innerHTML = `
+                    <div class="rank-info">
+                        <span class="rank-name">${name}</span>
+                        <span class="rank-code">${code}</span>
+                    </div>
+                    <span class="rank-count" style="color:var(--favorite);">⭐</span>
+                `;
+                container.appendChild(card);
+            }
+        }
+
         function openModal(stock) {
             currentStockCode = stock.code;
+            currentStockName = stock.name;
+            
             document.getElementById('mName').innerText = stock.name;
             document.getElementById('mCode').innerText = stock.code;
             document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
@@ -300,11 +369,20 @@
             document.getElementById('mFirstCell').innerText = stock.first_cell;
             document.getElementById('mMemoInput').value = localStorage.getItem(`memo_${stock.code}`) || '';
             
-            // 네이버 금융 일봉 차트 호출 (서버리스 꼼수)
+            // 모달 열 때 현재 즐겨찾기 상태 셋팅
+            let favs = JSON.parse(localStorage.getItem('favorite_stocks') || '{}');
+            const btn = document.getElementById('btnFavoriteToggle');
+            if (favs[stock.code]) {
+                btn.innerText = '⭐';
+                btn.classList.add('active');
+            } else {
+                btn.innerText = '☆';
+                btn.classList.remove('active');
+            }
+
             const imgUrl = `https://ssl.pstatic.net/imgfinance/chart/item/area/day/${stock.code}.png?sidcode=${new Date().getTime()}`;
             document.getElementById('mChartImg').src = imgUrl;
             
-            // Canvas 해상도 매칭 및 초기화
             setTimeout(() => {
                 const rect = document.getElementById('chartArea').getBoundingClientRect();
                 canvas.width = rect.width;
@@ -316,6 +394,7 @@
         }
 
         function closeModal() { document.getElementById('stockModal').style.display = 'none'; }
+        
         function saveStockMemo() {
             localStorage.setItem(`memo_${currentStockCode}`, document.getElementById('mMemoInput').value);
             alert("저장되었습니다.");
@@ -409,7 +488,6 @@
 
             if (!title || !content) { alert("제목과 내용을 입력하세요."); return; }
 
-            // 일반 업로드 이미지가 있는지 체크
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -417,10 +495,9 @@
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                // 모달에서 넘겨받은 차트 데이터(tempChartData)가 있는지 체크
                 let cData = window.tempChartData ? JSON.parse(JSON.stringify(window.tempChartData)) : null;
                 _executeJournalSave(date, title, content, "", cData);
-                window.tempChartData = null; // 초기화
+                window.tempChartData = null; 
             }
         }
 
@@ -460,7 +537,6 @@
                 if (j.image) {
                     mediaHtml = `<img src="${j.image}" class="journal-img">`;
                 } else if (j.chartData) {
-                    // 저장된 상대 좌표를 이용해 미니 차트에 선을 다시 그리는 로직
                     const cId = `jCanvas_${j.id}`;
                     mediaHtml = `
                         <div class="journal-chart-wrapper">
@@ -480,11 +556,9 @@
             });
         }
 
-        // 매매일지 리스트에 그려질 미니 차트 복원 함수
         window.drawSavedLine = function(canvasId, sx, sy, ex, ey) {
             const canvas = document.getElementById(canvasId);
             if(!canvas) return;
-            // 부모 크기에 맞춰 캔버스 크기 조정
             canvas.width = canvas.parentElement.offsetWidth;
             canvas.height = canvas.parentElement.offsetHeight;
             const ctx = canvas.getContext('2d');
@@ -498,6 +572,7 @@
 
         window.onload = () => {
             fetchMatrixData();
+            renderFavorites(); // 즐겨찾기 로드
             initJournal();
             initCanvasEvents();
         };
