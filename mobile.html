@@ -4,13 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주도주 트래킹 (모바일)</title>
-
-    <script>
-        if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            window.location.href = "index.html"; 
-        }
-    </script>
-
     <style>
         :root {
             --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
@@ -18,39 +11,554 @@
             --r4: #ef4444; --r3: #f97316; --r2: #f59e0b; --r1: #10b981;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 15px 10px; line-height: 1.5; font-size: 14px; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 15px; line-height: 1.5; font-size: 14px; }
         
-        header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        header { margin-bottom: 20px; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         header h1 { font-size: 1.4rem; color: var(--accent); margin-bottom: 5px; }
         header p { color: var(--text-muted); font-size: 0.8rem; }
 
-        /* 모바일용 메인 레이아웃 (1단 세로 배치) */
-        .section-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .section-title { font-size: 1.1rem; margin-bottom: 12px; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 5px; font-weight: bold; }
-        .section-title.red { color: #f43f5e; border-color: #f43f5e; }
-        .section-title.green { color: #10b981; border-color: #10b981; }
-        .section-title.yellow { color: var(--favorite); border-color: var(--favorite); }
+        /* 모바일용 1열 세로 레이아웃 */
+        .section { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .section h2 { font-size: 1.1rem; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid var(--border-color); }
+        .h2-matrix { color: var(--accent); border-color: var(--accent); }
+        .h2-ma { color: #f43f5e; border-color: #f43f5e; }
+        .h2-fav { color: var(--favorite); border-color: var(--favorite); }
+        .h2-rank { color: #10b981; border-color: #10b981; }
 
-        /* 모바일 매트릭스 리스트 */
-        .matrix-grid { display: flex; flex-direction: column; gap: 10px; }
-        .matrix-cell { background-color: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; }
+        /* 매트릭스를 모바일용 리스트로 변환 */
+        .matrix-mobile-container { display: flex; flex-direction: column; gap: 10px; }
+        .matrix-cell { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; }
         .cell-header { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; }
-        .cell-header span:last-child { font-size: 0.75rem; color: var(--text-muted); }
         
-        .stock-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        /* 종목 리스트 공통 (터치 친화적 패딩) */
+        .stock-list, .ma-list, .journal-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
         .stock-item { font-size: 0.9rem; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .stock-item:active { background: var(--border-color); }
         .stock-change { font-weight: bold; }
 
-        /* 이평선 및 즐겨찾기 리스트 */
-        .ma-list, .journal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .ma-badges { display: flex; gap: 4px; margin-top: 4px; }
-        .badge { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; font-weight: bold; color: #fff; }
+        /* 뱃지 및 카드 */
+        .ma-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+        .badge { font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; font-weight: bold; color: #fff; }
         .bg-ma5 { background-color: #3b82f6; } .bg-ma20 { background-color: #eab308; } .bg-ma60 { background-color: #a855f7; }
 
-        /* 일자별 랭킹 보드 */
+        .ranking-container { display: flex; flex-direction: column; gap: 15px; }
+        .date-title { font-size: 0.9rem; color: #10b981; margin-bottom: 8px; font-weight: bold; }
         .ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .ranking-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .rank-info { display: flex; flex-direction: column; }
+        .ranking-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+        .rank-info { display: flex; justify-content: space-between; align-items: center; }
         .rank-name { font-size: 0.85rem; font-weight: bold; }
-        .rank-code { font-size: 0.7rem; color: var
+        .rank-code { font-size: 0.7rem; color: var(--text-muted); }
+        .rank-count { font-size: 1rem; color: #f43f5e; font-weight: bold; letter-spacing: 1px; text-align: right; }
+
+        /* 모바일 매매일지 폼 */
+        .journal-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .journal-form input, .journal-form textarea { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: #fff; font-size: 16px; /* 모바일 줌 방지 */ }
+        .journal-form textarea { resize: none; height: 80px; }
+        .journal-form button { background: #10b981; color: #fff; border: none; border-radius: 6px; padding: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        
+        .journal-item { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; position: relative; }
+        .journal-item-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; }
+        .journal-item-title { font-weight: bold; color: #fff; font-size: 0.95rem; margin-bottom: 4px; }
+        .journal-item-content { font-size: 0.85rem; color: #cbd5e1; white-space: pre-line; margin-bottom: 10px; }
+        .journal-img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border-color); display: block; margin-top: 10px; }
+        .journal-del-btn { background: none; border: none; color: #ef4444; font-size: 0.8rem; font-weight: bold; }
+
+        /* 미니 차트 컨테이너 */
+        .journal-chart-wrapper { position: relative; width: 100%; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: #fff; }
+        .journal-chart-wrapper img { width: 100%; display: block; }
+        .journal-chart-wrapper canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+        /* 풀스크린 모바일 모달 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 1000; overflow-y: auto; padding: 15px; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-title-wrapper { display: flex; align-items: center; gap: 10px; }
+        .modal-title { font-size: 1.3rem; color: var(--accent); font-weight: bold; }
+        .btn-favorite-toggle { font-size: 1.5rem; color: var(--text-muted); transition: 0.2s; padding: 5px; }
+        .btn-favorite-toggle.active { color: var(--favorite); }
+        .modal-close { font-size: 2rem; color: var(--text-muted); line-height: 1; padding-left: 15px; }
+        
+        .chart-draw-area { position: relative; width: 100%; aspect-ratio: 4/3; background: #fff; border-radius: 6px; border: 2px solid var(--border-color); margin-bottom: 10px; overflow: hidden; }
+        .chart-draw-area img { width: 100%; height: 100%; object-fit: fill; display: block; user-select: none; pointer-events: none; }
+        .chart-draw-area canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
+        
+        .chart-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .chart-controls button { flex: 1; padding: 12px; font-size: 0.9rem; font-weight: bold; border: none; border-radius: 6px; color: #fff; }
+        .btn-clear { background: #ef4444; }
+        .btn-send { background: #10b981; }
+
+        .modal-info-box { background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 0.85rem; display: flex; justify-content: space-between; }
+        .modal-info-box span { color: var(--text-muted); }
+        .modal-info-box strong { color: #fff; font-weight: bold; }
+
+        .memo-area { margin-top: 15px; margin-bottom: 30px; }
+        .memo-area textarea { width: 100%; background: #1e293b; border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 6px; height: 80px; resize: none; margin-bottom: 8px; font-size: 16px; }
+        .memo-area button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 1rem; }
+
+        /* 행 라벨 컬러 */
+        .r4-cell { border-top: 3px solid var(--r4); } .r3-cell { border-top: 3px solid var(--r3); }
+        .r2-cell { border-top: 3px solid var(--r2); } .r1-cell { border-top: 3px solid var(--r1); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>주도주 트래킹 (Mobile)</h1>
+        <p>일봉 차트 작도 및 스마트 매매일지</p>
+    </header>
+
+    <div class="section">
+        <h2 class="h2-fav">⭐ 즐겨찾기</h2>
+        <div class="ranking-grid" id="favoriteGrid">
+            <div style="color:var(--text-muted); font-size:0.8rem; grid-column: span 2;">종목 클릭 후 별(☆)을 눌러 추가하세요.</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="h2-matrix">📊 오늘 포착 종목</h2>
+        <div class="matrix-mobile-container" id="matrixGrid">
+            <div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">데이터를 불러오는 중입니다...</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="h2-ma">🚀 중요 이평선 돌파 (오늘)</h2>
+        <ul class="ma-list" id="maList"></ul>
+    </div>
+
+    <div class="section">
+        <h2 class="h2-rank">🔥 일자별 누적 랭킹</h2>
+        <div class="ranking-container" id="rankingContainer"></div>
+    </div>
+
+    <div class="section">
+        <h2 class="h2-rank">📝 매매일지 장부</h2>
+        <div class="journal-form">
+            <input type="date" id="journalDate">
+            <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 주도 섹터 매매)">
+            <textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
+            <input type="file" id="journalImage" accept="image/*">
+            <button onclick="saveJournal()">일지 저장하기</button>
+        </div>
+        <ul class="journal-list" id="journalList"></ul>
+    </div>
+
+    <div class="modal" id="stockModal">
+        <div class="modal-header">
+            <div class="modal-title-wrapper">
+                <h2 class="modal-title" id="mName">종목명</h2>
+                <div id="btnFavoriteToggle" class="btn-favorite-toggle" onclick="toggleFavorite()">☆</div>
+            </div>
+            <div class="modal-close" onclick="closeModal()">&times;</div>
+        </div>
+        
+        <div class="chart-draw-area" id="chartArea">
+            <img id="mChartImg" src="" alt="차트">
+            <canvas id="mChartCanvas"></canvas>
+        </div>
+        <div class="chart-controls">
+            <button class="btn-clear" onclick="clearCanvas()">선 지우기</button>
+            <button class="btn-send" onclick="sendChartToJournal()">일지로 전송</button>
+        </div>
+
+        <div class="modal-info-box"><span>종목 코드</span> <strong id="mCode">000000</strong></div>
+        <div class="modal-info-box"><span>오늘 상승률</span> <strong id="mChange" style="color: #ef4444;">+0.0%</strong></div>
+        <div class="modal-info-box"><span>전일비 거래량</span> <strong id="mVolume">0.0%</strong></div>
+        <div class="modal-info-box" style="border: 1px dashed var(--accent); margin-top: 10px;">
+            <span>🎯 최초 돌파 날짜</span> <strong id="mFirstDate">2026-00-00</strong>
+        </div>
+        <div class="modal-info-box"><span>🎯 최초 돌파 위치</span> <strong id="mFirstCell" style="color: var(--accent);">R0C0</strong></div>
+        
+        <div class="memo-area">
+            <label>📌 종목 메모 (로컬 저장)</label>
+            <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항 메모..."></textarea>
+            <button onclick="saveStockMemo()">메모 저장</button>
+        </div>
+    </div>
+
+    <script>
+        let globalCapturedData = {};
+        let currentStockCode = '';
+        let currentStockName = '';
+        
+        const canvas = document.getElementById('mChartCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let drawnLines = []; 
+
+        const rowTitles = { 4: "상승률 12% 이상", 3: "상승률 6% ~ 12%", 2: "상승률 3% ~ 6%", 1: "상승률 3% 미만" };
+        const colTitles = { 1: "거래량 감소", 2: "거래 100~150%", 3: "거래 150~200%", 4: "거래 200% 이상" };
+
+        function initCanvasEvents() {
+            const startDrawing = (e) => {
+                e.preventDefault();
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches && e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches && e.touches[0].clientY) - rect.top;
+                drawnLines = [{ startX: x, startY: y, endX: x, endY: y }]; 
+            };
+
+            const draw = (e) => {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches && e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches && e.touches[0].clientY) - rect.top;
+                drawnLines[0].endX = x;
+                drawnLines[0].endY = y;
+                redrawCanvas();
+            };
+
+            const stopDrawing = () => { isDrawing = false; };
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawing, {passive: false});
+            canvas.addEventListener('touchmove', draw, {passive: false});
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (drawnLines.length > 0) {
+                const line = drawnLines[0];
+                ctx.beginPath();
+                ctx.moveTo(line.startX, line.startY);
+                ctx.lineTo(line.endX, line.endY);
+                ctx.strokeStyle = '#ef4444'; 
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+        }
+
+        function clearCanvas() {
+            drawnLines = [];
+            redrawCanvas();
+        }
+
+        function sendChartToJournal() {
+            if (drawnLines.length === 0) {
+                alert("차트에 선을 그어주세요!"); return;
+            }
+            const rect = canvas.getBoundingClientRect();
+            const relLine = {
+                startX: drawnLines[0].startX / rect.width,
+                startY: drawnLines[0].startY / rect.height,
+                endX: drawnLines[0].endX / rect.width,
+                endY: drawnLines[0].endY / rect.height
+            };
+
+            window.tempChartData = { code: currentStockCode, line: relLine };
+            document.getElementById('journalTitle').value = `[차트] ${currentStockName} 분석`;
+            document.getElementById('journalContent').value = "핵심 추세선 돌파 관찰 요망.";
+            
+            alert("일지 폼에 장착되었습니다. 하단에서 저장해주세요.");
+            closeModal();
+            document.querySelector('.journal-section').scrollIntoView({behavior: "smooth"});
+        }
+
+        function triggerModalByCode(code, name) {
+            let foundStock = null;
+            for (const cell in globalCapturedData) {
+                const target = globalCapturedData[cell].find(s => s.code === code);
+                if (target) { foundStock = target; break; }
+            }
+            if (foundStock) openModal(foundStock);
+            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-", first_cell: "-" });
+        }
+
+        function toggleFavorite() {
+            let favs = JSON.parse(localStorage.getItem('favorite_stocks') || '{}');
+            const btn = document.getElementById('btnFavoriteToggle');
+
+            if (favs[currentStockCode]) {
+                delete favs[currentStockCode];
+                btn.innerText = '☆';
+                btn.classList.remove('active');
+            } else {
+                favs[currentStockCode] = currentStockName;
+                btn.innerText = '⭐';
+                btn.classList.add('active');
+            }
+            localStorage.setItem('favorite_stocks', JSON.stringify(favs));
+            renderFavorites();
+        }
+
+        function renderFavorites() {
+            const container = document.getElementById('favoriteGrid');
+            container.innerHTML = '';
+            const favs = JSON.parse(localStorage.getItem('favorite_stocks') || '{}');
+
+            if (Object.keys(favs).length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; grid-column: span 2;">등록된 즐겨찾기가 없습니다.</div>';
+                return;
+            }
+
+            for (const [code, name] of Object.entries(favs)) {
+                const card = document.createElement('div');
+                card.className = 'ranking-card';
+                card.onclick = () => triggerModalByCode(code, name);
+                card.innerHTML = `
+                    <div class="rank-info">
+                        <span class="rank-name">${name}</span>
+                        <span class="rank-code">${code}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function openModal(stock) {
+            currentStockCode = stock.code;
+            currentStockName = stock.name;
+            
+            document.getElementById('mName').innerText = stock.name;
+            document.getElementById('mCode').innerText = stock.code;
+            document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
+            document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
+            document.getElementById('mFirstDate').innerText = stock.first_date;
+            document.getElementById('mFirstCell').innerText = stock.first_cell;
+            document.getElementById('mMemoInput').value = localStorage.getItem(`memo_${stock.code}`) || '';
+            
+            let favs = JSON.parse(localStorage.getItem('favorite_stocks') || '{}');
+            const btn = document.getElementById('btnFavoriteToggle');
+            if (favs[stock.code]) {
+                btn.innerText = '⭐'; btn.classList.add('active');
+            } else {
+                btn.innerText = '☆'; btn.classList.remove('active');
+            }
+
+            // 네이버 금융 일봉 캔들 차트
+            const imgUrl = `https://ssl.pstatic.net/imgfinance/chart/item/candle/day/${stock.code}.png?sidcode=${new Date().getTime()}`;
+            document.getElementById('mChartImg').src = imgUrl;
+            
+            setTimeout(() => {
+                const rect = document.getElementById('chartArea').getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                clearCanvas();
+            }, 100);
+
+            document.getElementById('stockModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // 모달 열릴때 배경 스크롤 방지
+        }
+
+        function closeModal() { 
+            document.getElementById('stockModal').style.display = 'none'; 
+            document.body.style.overflow = 'auto'; 
+        }
+        
+        function saveStockMemo() {
+            localStorage.setItem(`memo_${currentStockCode}`, document.getElementById('mMemoInput').value);
+            alert("메모가 저장되었습니다.");
+        }
+
+        async function fetchMatrixData() {
+            try {
+                const response = await fetch('matrix_data.json');
+                const data = await response.json();
+                globalCapturedData = data.captured;
+
+                // 모바일 매트릭스 렌더링 (데이터가 있는 칸만 표시)
+                const gridContainer = document.getElementById('matrixGrid');
+                gridContainer.innerHTML = '';
+                let hasData = false;
+
+                for (let r = 4; r >= 1; r--) {
+                    for (let c = 4; c >= 1; c--) {
+                        const cellId = `R${r}C${c}`;
+                        const stocks = data.captured[cellId] || [];
+                        
+                        if (stocks.length > 0) {
+                            hasData = true;
+                            const cell = document.createElement('div');
+                            cell.className = `matrix-cell r${r}-cell`;
+                            
+                            let listHtml = '';
+                            stocks.forEach(stock => {
+                                // HTML 문자열로 생성하고 이벤트는 나중에 위임하거나, 엘리먼트를 직접 조합
+                            });
+
+                            cell.innerHTML = `
+                                <div class="cell-header" style="color: var(--r${r});">
+                                    <span>${cellId} (${colTitles[c]})</span>
+                                    <span>${rowTitles[r]}</span>
+                                </div>
+                                <ul class="stock-list" id="mlist-${cellId}"></ul>
+                            `;
+                            gridContainer.appendChild(cell);
+
+                            const ul = document.getElementById(`mlist-${cellId}`);
+                            stocks.forEach(stock => {
+                                const li = document.createElement('li');
+                                li.className = 'stock-item';
+                                li.onclick = () => openModal(stock);
+                                li.innerHTML = `<span>${stock.name}</span><span class="stock-change" style="color: var(--r${r});">+${stock.change}%</span>`;
+                                ul.appendChild(li);
+                            });
+                        }
+                    }
+                }
+                if(!hasData) gridContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">오늘 포착된 종목이 없습니다.</div>';
+
+                // 이평선 돌파
+                const maContainer = document.getElementById('maList');
+                maContainer.innerHTML = '';
+                (data.ma_breakthroughs || []).forEach(stock => {
+                    const li = document.createElement('li');
+                    li.className = 'stock-item';
+                    li.onclick = () => triggerModalByCode(stock.code, stock.name);
+                    let badges = '';
+                    if (stock.ma5) badges += '<span class="badge bg-ma5">5일</span> ';
+                    if (stock.ma20) badges += '<span class="badge bg-ma20">20일</span> ';
+                    if (stock.ma60) badges += '<span class="badge bg-ma60">60일</span> ';
+                    li.innerHTML = `<div><strong>${stock.name}</strong><span style="font-size:0.75rem; color:var(--text-muted); display:block;">${stock.code}</span></div><div class="ma-badges">${badges}</div>`;
+                    maContainer.appendChild(li);
+                });
+
+                // 일자별 랭킹
+                const rankContainer = document.getElementById('rankingContainer');
+                rankContainer.innerHTML = '';
+                const countMap = {};
+                (data.rankings || []).forEach(r => countMap[r.code] = r.count);
+                const dateGroups = {};
+                Object.values(data.captured || {}).forEach(list => {
+                    list.forEach(stock => {
+                        const dateStr = stock.first_date || "기록 없음";
+                        if (!dateGroups[dateStr]) dateGroups[dateStr] = [];
+                        if (!dateGroups[dateStr].find(s => s.code === stock.code)) {
+                            dateGroups[dateStr].push({ code: stock.code, name: stock.name, count: countMap[stock.code] || 1 });
+                        }
+                    });
+                });
+
+                const sortedDates = Object.keys(dateGroups).sort((a, b) => b.localeCompare(a));
+                const todayStr = new Date().toISOString().substring(0, 10);
+                sortedDates.forEach(date => {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'date-group';
+                    groupDiv.innerHTML = `<div class="date-title">📅 최초 돌파일: ${date} ${date === todayStr ? '(오늘 신규)' : ''}</div>`;
+                    
+                    const gridDiv = document.createElement('div');
+                    gridDiv.className = 'ranking-grid';
+                    dateGroups[date].sort((a, b) => b.count - a.count).forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'ranking-card';
+                        card.onclick = () => triggerModalByCode(item.code, item.name);
+                        let plusMarks = '+'.repeat(Math.min(item.count, 5)) + (item.count > 5 ? '+' : '');
+                        card.innerHTML = `<div class="rank-info"><span class="rank-name">${item.name}</span><span class="rank-code">${item.code}</span></div><div class="rank-count">${plusMarks}</div>`;
+                        gridDiv.appendChild(card);
+                    });
+                    groupDiv.appendChild(gridDiv);
+                    rankContainer.appendChild(groupDiv);
+                });
+            } catch (error) { console.error("데이터 로드 실패:", error); }
+        }
+
+        function initJournal() {
+            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
+            renderJournals();
+        }
+
+        function saveJournal() {
+            const date = document.getElementById('journalDate').value;
+            const title = document.getElementById('journalTitle').value.trim();
+            const content = document.getElementById('journalContent').value.trim();
+            const fileInput = document.getElementById('journalImage');
+
+            if (!title || !content) { alert("제목과 내용을 입력하세요."); return; }
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    _executeJournalSave(date, title, content, e.target.result, null);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                let cData = window.tempChartData ? JSON.parse(JSON.stringify(window.tempChartData)) : null;
+                _executeJournalSave(date, title, content, "", cData);
+                window.tempChartData = null; 
+            }
+        }
+
+        function _executeJournalSave(date, title, content, imageData, chartData) {
+            const journals = JSON.parse(localStorage.getItem('trading_journals') || '[]');
+            journals.unshift({ id: Date.now(), date, title, content, image: imageData, chartData: chartData });
+            localStorage.setItem('trading_journals', JSON.stringify(journals));
+            document.getElementById('journalTitle').value = '';
+            document.getElementById('journalContent').value = '';
+            document.getElementById('journalImage').value = '';
+            renderJournals();
+        }
+
+        function deleteJournal(id) {
+            if (!confirm("일지를 삭제하시겠습니까?")) return;
+            let journals = JSON.parse(localStorage.getItem('trading_journals') || '[]');
+            journals = journals.filter(j => j.id !== id);
+            localStorage.setItem('trading_journals', JSON.stringify(journals));
+            renderJournals();
+        }
+
+        function renderJournals() {
+            const listContainer = document.getElementById('journalList');
+            listContainer.innerHTML = '';
+            const journals = JSON.parse(localStorage.getItem('trading_journals') || '[]');
+
+            if (journals.length === 0) {
+                listContainer.innerHTML = '<li style="color:var(--text-muted); text-align:center; padding:10px;">기록이 없습니다.</li>';
+                return;
+            }
+
+            journals.forEach(j => {
+                const li = document.createElement('li');
+                li.className = 'journal-item';
+                
+                let mediaHtml = '';
+                if (j.image) {
+                    mediaHtml = `<img src="${j.image}" class="journal-img">`;
+                } else if (j.chartData) {
+                    const cId = `jCanvas_${j.id}`;
+                    mediaHtml = `
+                        <div class="journal-chart-wrapper">
+                            <img src="https://ssl.pstatic.net/imgfinance/chart/item/candle/day/${j.chartData.code}.png" onload="drawSavedLine('${cId}', ${j.chartData.line.startX}, ${j.chartData.line.startY}, ${j.chartData.line.endX}, ${j.chartData.line.endY})">
+                            <canvas id="${cId}"></canvas>
+                        </div>
+                    `;
+                }
+
+                li.innerHTML = `
+                    <div class="journal-item-header"><span>📅 ${j.date}</span><button class="journal-del-btn" onclick="deleteJournal(${j.id})">삭제</button></div>
+                    <div class="journal-item-title">${j.title}</div>
+                    <div class="journal-item-content">${j.content}</div>
+                    ${mediaHtml}
+                `;
+                listContainer.appendChild(li);
+            });
+        }
+
+        window.drawSavedLine = function(canvasId, sx, sy, ex, ey) {
+            const canvas = document.getElementById(canvasId);
+            if(!canvas) return;
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.beginPath();
+            ctx.moveTo(sx * canvas.width, sy * canvas.height);
+            ctx.lineTo(ex * canvas.width, ey * canvas.height);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        window.onload = () => {
+            fetchMatrixData();
+            renderFavorites(); 
+            initJournal();
+            initCanvasEvents();
+        };
+    </script>
+</body>
+</html>
