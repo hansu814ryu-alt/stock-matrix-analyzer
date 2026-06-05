@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>주도주 트래킹 (모바일)</title>
+
+    <script>
+        if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "index.html"; 
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border-color: #334155; --accent: #38bdf8; --favorite: #fbbf24;
+            --r4: #ef4444; --r3: #f97316; --r2: #f59e0b; --r1: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 15px 10px; line-height: 1.5; font-size: 14px; }
+        
+        header { margin-bottom: 20px; text-align: center; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        header h1 { font-size: 1.4rem; color: var(--accent); margin-bottom: 5px; }
+        header p { color: var(--text-muted); font-size: 0.8rem; }
+
+        /* 모바일용 메인 레이아웃 (1단 세로 배치) */
+        .section-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding:
