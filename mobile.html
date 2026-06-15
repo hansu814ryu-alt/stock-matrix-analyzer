@@ -25,7 +25,6 @@
         .h2-rank { color: #10b981; border-color: #10b981; }
         .h2-high { color: #f59e0b; border-color: #f59e0b; }
 
-        /* 매트릭스 6칸 리스트 */
         .matrix-mobile-container { display: flex; flex-direction: column; gap: 10px; }
         .matrix-cell { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; }
         .cell-header { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; }
@@ -43,12 +42,13 @@
         .ranking-container { display: flex; flex-direction: column; gap: 15px; }
         .date-title { font-size: 0.9rem; color: #10b981; margin-bottom: 8px; font-weight: bold; }
         .ranking-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
-        .ranking-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+        .ranking-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
         .rank-info { display: flex; justify-content: space-between; align-items: center; }
-        .rank-name { font-size: 0.9rem; font-weight: bold; }
+        .rank-name { font-size: 0.95rem; font-weight: bold; }
         .rank-code { font-size: 0.75rem; color: var(--text-muted); }
-        .rank-path { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
-        .rank-count { font-size: 1.1rem; color: #f43f5e; font-weight: bold; letter-spacing: 1px; text-align: right; }
+        .rank-path { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+        .rank-stat { font-size: 0.8rem; color: var(--accent); background: rgba(56, 189, 248, 0.1); padding: 8px; border-radius: 4px; display:flex; flex-direction: column; gap: 4px; }
+        .rank-count { font-size: 1.1rem; color: #f43f5e; font-weight: bold; letter-spacing: 1px; text-align: right; margin-top: 5px;}
 
         .journal-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         .journal-form input, .journal-form textarea { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: #fff; font-size: 16px; }
@@ -88,7 +88,7 @@
 
     <header>
         <h1>주도주 트래킹 (Mobile)</h1>
-        <p>초압축 데이터 · 스마트 매매일지</p>
+        <p>1주 백테스팅 엔진 및 스마트 매매일지</p>
     </header>
 
     <div class="section">
@@ -111,7 +111,7 @@
     <div class="section">
         <h2 class="h2-fav">⭐ 즐겨찾기</h2>
         <div class="ranking-grid" id="favoriteGrid">
-            <div style="color:var(--text-muted); font-size:0.8rem;">종목 클릭 후 별(☆)을 눌러 추가하세요.</div>
+            <div style="color:var(--text-muted); font-size:0.8rem; grid-column: span 1;">종목 클릭 후 별(☆)을 눌러 추가하세요.</div>
         </div>
     </div>
 
@@ -128,7 +128,7 @@
     </div>
 
     <div class="section">
-        <h2 class="h2-rank">🔥 일자별 누적 랭킹 (카운트 5 이상)</h2>
+        <h2 class="h2-rank">🔥 C4 주도주 랭킹 (1주 퀀트 백테스트)</h2>
         <div class="ranking-container" id="rankingContainer"></div>
     </div>
 
@@ -151,7 +151,6 @@
         <div class="modal-info-box" style="border: 1px dashed var(--accent); margin-top: 10px;">
             <span>🎯 최초 돌파 날짜</span> <strong id="mFirstDate">2026-00-00</strong>
         </div>
-        <div class="modal-info-box"><span>🎯 최초 돌파 위치</span> <strong id="mFirstCell" style="color: var(--accent);">R0C0</strong></div>
         
         <div class="memo-area">
             <label>📌 종목 메모 (로컬 저장)</label>
@@ -161,7 +160,6 @@
     </div>
 
     <script>
-        // 로컬스토리지 안정화 모듈
         function getSafeLocalData(key, defaultVal) {
             try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : defaultVal; } 
             catch(e) { return defaultVal; }
@@ -184,7 +182,7 @@
                 if (target) { foundStock = target; break; }
             }
             if (foundStock) openModal(foundStock);
-            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-", first_cell: "-" });
+            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-" });
         }
 
         function toggleFavorite() {
@@ -216,7 +214,7 @@
                 const card = document.createElement('div');
                 card.className = 'ranking-card';
                 card.onclick = () => triggerModalByCode(code, name);
-                card.innerHTML = `<div class="rank-info"><span class="rank-name">${name}</span></div><div class="rank-info"><span class="rank-code">${code}</span><span class="rank-count" style="color:var(--favorite);">⭐</span></div>`;
+                card.innerHTML = `<div class="rank-info"><span class="rank-name">${name}</span><span class="rank-code">${code}</span></div><div style="text-align:right;"><span class="rank-count" style="color:var(--favorite);">⭐</span></div>`;
                 container.appendChild(card);
             }
         }
@@ -230,7 +228,6 @@
             document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
             document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
             document.getElementById('mFirstDate').innerText = stock.first_date;
-            document.getElementById('mFirstCell').innerText = stock.first_cell;
             document.getElementById('mMemoInput').value = getSafeLocalData(`memo_${stock.code}`, '');
             
             let favs = getSafeLocalData('favorite_stocks', {});
@@ -298,9 +295,9 @@
                         }
                     }
                 }
-                if(!hasData) gridContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">조건에 포착된 핵심 종목이 없습니다.</div>';
+                if(!hasData) gridContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">조건에 포착된 종목이 없습니다.</div>';
 
-                // 2. 신고가 렌더링
+                // 2. 신고가
                 const highContainer = document.getElementById('newHighGrid');
                 highContainer.innerHTML = '';
                 const highList = data.new_highs || [];
@@ -317,18 +314,18 @@
                     });
                 }
 
-                // 3. 이평선 렌더링 (3>2>1 정렬)
+                // 3. 이평선 3>2>1 정렬 및 일자 (모바일은 2개 이상만)
                 const maContainer = document.getElementById('maList');
                 maContainer.innerHTML = '';
                 
                 let maStocks = data.ma_breakthroughs || [];
                 maStocks.forEach(s => { s.breakCount = (s.ma5?1:0) + (s.ma20?1:0) + (s.ma60?1:0); });
-                maStocks.sort((a, b) => b.breakCount - a.breakCount);
+                const filteredMaStocks = maStocks.filter(s => s.breakCount >= 2).sort((a, b) => b.breakCount - a.breakCount);
 
-                if(maStocks.length === 0) {
-                    maContainer.innerHTML = '<li class="stock-item" style="color:var(--text-muted); justify-content:center;">이평선 돌파 종목이 없습니다.</li>';
+                if(filteredMaStocks.length === 0) {
+                    maContainer.innerHTML = '<li class="stock-item" style="color:var(--text-muted); justify-content:center;">이평선 2개 이상 동시 돌파 종목이 없습니다.</li>';
                 } else {
-                    maStocks.forEach(stock => {
+                    filteredMaStocks.forEach(stock => {
                         const li = document.createElement('li');
                         li.className = 'stock-item';
                         li.onclick = () => triggerModalByCode(stock.code, stock.name);
@@ -348,13 +345,13 @@
                     });
                 }
 
-                // 4. 누적 랭킹 5회 이상 & Path 히스토리
+                // 4. 백테스팅 누적 랭킹
                 const rankContainer = document.getElementById('rankingContainer');
                 rankContainer.innerHTML = '';
+                const c4Stats = data.c4_statistics || {};
                 
                 const dateGroups = {};
                 (data.rankings || []).forEach(item => {
-                    if(item.count < 5) return;
                     const dateStr = item.first_date;
                     if(!dateGroups[dateStr]) dateGroups[dateStr] = [];
                     dateGroups[dateStr].push(item);
@@ -375,19 +372,25 @@
                         const card = document.createElement('div');
                         card.className = 'ranking-card';
                         card.onclick = () => triggerModalByCode(item.code, item.name);
-                        let plusMarks = '+'.repeat(Math.min(item.count, 10)) + (item.count > 10 ? '+' : '');
                         
+                        let plusMarks = '+'.repeat(Math.min(item.count, 10)) + (item.count > 10 ? '+' : '');
                         let historyStr = (item.history_cells || []).join(' → ');
+                        let stat = c4Stats[item.finale_cell] || {prob_a: 0.0, prob_b: 0.0, total: 0};
 
                         card.innerHTML = `
                             <div class="rank-info" style="margin-bottom:4px;">
                                 <span class="rank-name">${item.name}</span>
                                 <span class="rank-code">${item.code}</span>
                             </div>
-                            <div class="rank-path" style="margin-bottom:8px;">
+                            <div class="rank-path" style="margin-bottom:6px;">
                                 <strong style="color:#fff;">경로:</strong> ${historyStr}
                             </div>
-                            <div style="text-align:right;"><span class="rank-count">${plusMarks}</span></div>
+                            <div class="rank-stat">
+                                <div style="margin-bottom:2px;">📍 피날레: <strong style="color:#fff;">[${item.finale_cell}]</strong></div>
+                                <div>📈 최고 +20%: <strong style="color:#fff;">${stat.prob_a}%</strong></div>
+                                <div>📉 종가 +20%: <strong style="color:#fff;">${stat.prob_b}%</strong></div>
+                            </div>
+                            <div class="rank-count">${plusMarks}</div>
                         `;
                         gridDiv.appendChild(card);
                     });
