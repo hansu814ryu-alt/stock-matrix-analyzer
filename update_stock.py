@@ -5,7 +5,7 @@ import os
 import json
 import time
 
-print("🚀 [시스템 개정] 신고가 탐색 및 히스토리 패스 추적 엔진 가동...")
+print("🚀 [시스템 개정] 1주(5영업일) 기반 C4구역 +20% 달성 백테스팅 엔진 가동...")
 
 # 1. 한국 시장 전체 보통주 라인업 로드
 df_krx = fdr.StockListing('KRX')
@@ -15,7 +15,7 @@ df_krx = df_krx[df_krx['Market'] != 'KONEX']
 target_codes = df_krx['Code'].tolist()
 name_dict = dict(zip(df_krx['Code'], df_krx['Name']))
 
-# 신고가(5년치) 확인을 위해 5년 데이터 수집
+# 52주 및 역사적 신고가 판별을 위해 5년치 데이터 스캔
 start_date = (datetime.date.today() - datetime.timedelta(days=5*365)).strftime('%Y-%m-%d')
 today_str = datetime.date.today().strftime('%Y-%m-%d')
 
@@ -25,17 +25,16 @@ if os.path.exists(history_file):
     df_history['Code'] = df_history['Code'].astype(str).str.zfill(6)
 else:
     df_history = pd.DataFrame(columns=[
-        'Date', 'Code', 'Name', 'Cell', 'Type1', 'Type2', 'Type3', 
-        'Base_Price', '1D_Return', '3D_Return', '5D_Return', 'Settled_Count',
-        'Break_MA5', 'Break_MA20', 'Break_MA60'
+        'Date', 'Code', 'Name', 'Cell', 'Base_Price', 
+        '1D_Return', '3D_Return', '5D_Return', 'Settled_Count'
     ])
 
 matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
 today_captured_list = []
 ma_breakthrough_stocks = []
-new_high_stocks = [] # 신설: 신고가 종목 리스트
+new_high_stocks = []
 
-print(f"📥 [2단계] {len(target_codes)}개 종목 분석 및 신고가/이평선 탐색 시작...")
+print(f"📥 [2단계] {len(target_codes)}개 종목 전수조사 및 신고가 판별 중...")
 
 for code in target_codes:
     try:
@@ -43,7 +42,6 @@ for code in target_codes:
         df = fdr.DataReader(code_str, start=start_date, end=today_str)
         if len(df) < 61: continue 
         
-        # 이동평균선
         df['MA5'] = df['Close'].rolling(5).mean()
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA60'] = df['Close'].rolling(60).mean()
@@ -59,10 +57,9 @@ for code in target_codes:
         
         change_rate = ((today_close - prev_close) / prev_close) * 100
         vol_ratio = (today_vol / prev_vol) * 100
-        
         stock_name = name_dict.get(code_str, code_str)
 
-        # [요구사항 3] 52주 신고가 및 역사적 신고가 판별
+        # 52주/역사적 신고가 스캔
         if change_rate > 0:
             df_1yr = df.iloc[-252:] if len(df) >= 252 else df
             high_52w = df_1yr['High'].max()
@@ -75,7 +72,7 @@ for code in target_codes:
 
         if change_rate <= 0: continue 
         
-        # 이평선 골든크로스 검증
+        # 이평선 돌파
         break_ma5 = bool(prev_data['Close'] <= prev_data['MA5'] and today_close > today_data['MA5'])
         break_ma20 = bool(prev_data['Close'] <= prev_data['MA20'] and today_close > today_data['MA20'])
         break_ma60 = bool(prev_data['Close'] <= prev_data['MA60'] and today_close > today_data['MA60'])
@@ -86,6 +83,7 @@ for code in target_codes:
                 "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60
             })
             
+        # 매트릭스 위치
         row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
         col = 1 if vol_ratio < 100 else 2 if vol_ratio < 150 else 3 if vol_ratio < 200 else 4
         cell_id = f"R{row}C{col}"
@@ -105,16 +103,14 @@ for code in target_codes:
         
         today_captured_list.append({
             'Date': today_str, 'Code': code_str, 'Name': stock_name, 'Cell': cell_id,
-            'Type1': False, 'Type2': False, 'Type3': False, 'Base_Price': today_close,
-            '1D_Return': None, '3D_Return': None, '5D_Return': None, 'Settled_Count': 0,
-            'Break_MA5': break_ma5, 'Break_MA20': break_ma20, 'Break_MA60': break_ma60
+            'Base_Price': today_close, '1D_Return': None, '3D_Return': None, '5D_Return': None, 'Settled_Count': 0
         })
         
     except Exception as e:
         pass
     time.sleep(0.02)
 
-print("📝 [3단계] 사후 추적관찰(Tracking) 과거 장부 정산 및 흐름 데이터 동기화...")
+print("📝 [3단계] 기본 장부 정산 중...")
 df_unsettled = df_history[df_history['Settled_Count'] < 3]
 
 for idx, row_data in df_unsettled.iterrows():
@@ -141,37 +137,72 @@ if today_captured_list:
     df_history = pd.concat([df_history, pd.DataFrame(today_captured_list)], ignore_index=True)
 df_history.to_csv(history_file, index=False)
 
-print("📊 [4단계] 주도주 누적 포착 카운트 및 패스(Path) 추적 생성...")
+print("📊 [4단계] 퀀트 백테스팅: C4구역(거래량폭발) 5회 달성 종목 1주일 +20% 도달 확률 스캔...")
 ranking_list = []
+c4_stats_data = {
+    'R2C4': {'total':0, 'a_suc':0, 'b_suc':0},
+    'R3C4': {'total':0, 'a_suc':0, 'b_suc':0},
+    'R4C4': {'total':0, 'a_suc':0, 'b_suc':0}
+}
+
 if not df_history.empty:
-    valid_cells = [f"R{r}C{c}" for r in range(2, 5) for c in range(2, 5)]
-    df_valid_history = df_history[df_history['Cell'].isin(valid_cells)]
+    c4_cells = ['R2C4', 'R3C4', 'R4C4']
+    df_c4_history = df_history[df_history['Cell'].isin(c4_cells)].sort_values(by=['Code', 'Date'])
     
-    # [요구사항 6] 종목별로 그룹화하여 카운트와 모든 과거 셀 위치(Path) 추출
-    for code, group in df_valid_history.groupby('Code'):
+    for code, group in df_c4_history.groupby('Code'):
         count = len(group)
         if count >= 5:
             code_str = str(code).zfill(6)
-            first_date = str(group['Date'].min())
-            cells_path = group['Cell'].tolist() # 거쳐간 모든 칸 리스트
+            # 정확히 5번째 달성된 날짜와 피날레 칸 확인
+            fifth_event = group.iloc[4]
+            d_day = str(fifth_event['Date'])
+            finale_cell = str(fifth_event['Cell'])
+            base_price = float(fifth_event['Base_Price'])
             
+            # 백테스트 통계 누적 (과거 5번째 달성된 날 기준 향후 5영업일 데이터 스캔)
+            try:
+                df_future = fdr.DataReader(code_str, start=d_day).iloc[1:6]
+                if len(df_future) > 0:
+                    c4_stats_data[finale_cell]['total'] += 1
+                    max_high = df_future['High'].max()
+                    last_close = df_future['Close'].iloc[-1]
+                    
+                    if max_high >= base_price * 1.2:
+                        c4_stats_data[finale_cell]['a_suc'] += 1
+                    if last_close >= base_price * 1.2:
+                        c4_stats_data[finale_cell]['b_suc'] += 1
+            except:
+                pass
+            
+            # 현재 랭킹 리스트 데이터 생성
+            first_date = str(group['Date'].min())
+            cells_path = group['Cell'].tolist()
             ranking_list.append({
                 "code": code_str, 
                 "name": name_dict.get(code_str, code_str), 
                 "count": int(count),
                 "first_date": first_date,
-                "history_cells": cells_path
+                "history_cells": cells_path,
+                "finale_cell": finale_cell
             })
     
-    # 카운트가 높은 순으로 정렬
     ranking_list = sorted(ranking_list, key=lambda x: x['count'], reverse=True)
+
+# 그룹별 확률(%) 계산
+c4_statistics = {}
+for cell, s in c4_stats_data.items():
+    tot = s['total']
+    prob_a = round((s['a_suc'] / tot * 100), 1) if tot > 0 else 0.0
+    prob_b = round((s['b_suc'] / tot * 100), 1) if tot > 0 else 0.0
+    c4_statistics[cell] = {'prob_a': prob_a, 'prob_b': prob_b, 'total': tot}
 
 print("⚙️ [5단계] 웹 배포용 고밀도 단일 JSON 패키징 빌드...")
 final_web_data = {
     "captured": matrix_results,         
     "rankings": ranking_list,           
     "ma_breakthroughs": ma_breakthrough_stocks,
-    "new_highs": new_high_stocks # 신설 데이터 반환
+    "new_highs": new_high_stocks,
+    "c4_statistics": c4_statistics
 }
 
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
