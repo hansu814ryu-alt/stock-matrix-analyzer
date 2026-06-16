@@ -5,7 +5,7 @@ import os
 import json
 import time
 
-print("🚀 [시스템 개정] 1주(5영업일) 기반 백테스팅 및 실전 패턴 추적 엔진 가동...")
+print("🚀 [시스템 개정] 60일 평균 거래량(VMA 60) 기반 퀀트 백테스팅 엔진 가동...")
 
 # 1. 한국 시장 전체 보통주 라인업 로드
 df_krx = fdr.StockListing('KRX')
@@ -44,18 +44,22 @@ for code in target_codes:
         df['MA5'] = df['Close'].rolling(5).mean()
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA60'] = df['Close'].rolling(60).mean()
+        # [핵심 로직 변경] 60일 평균 거래량(VMA 60) 산출
+        df['MA60_Vol'] = df['Volume'].rolling(60).mean()
         
         today_data = df.iloc[-1]
         prev_data = df.iloc[-2]
         today_close = today_data['Close']
         prev_close = prev_data['Close']
-        prev_vol = prev_data['Volume']
         today_vol = today_data['Volume']
+        today_vol_ma60 = today_data['MA60_Vol']
         
-        if prev_close == 0 or prev_vol == 0: continue
+        # 60일 평균 거래량이 0인 거래정지 종목 등 패스
+        if prev_close == 0 or today_vol_ma60 == 0: continue
         
         change_rate = ((today_close - prev_close) / prev_close) * 100
-        vol_ratio = (today_vol / prev_vol) * 100
+        # [핵심 로직 변경] X축을 전일 대비가 아닌 60일 평균 대비 거래량 비율로 수정
+        vol_ratio = (today_vol / today_vol_ma60) * 100
         stock_name = name_dict.get(code_str, code_str)
 
         if change_rate > 0:
@@ -79,8 +83,9 @@ for code in target_codes:
                 "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60
             })
             
+        # [핵심 로직 변경] X축 4구간 (100% / 200% / 400% 기준)
         row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
-        col = 1 if vol_ratio < 100 else 2 if vol_ratio < 150 else 3 if vol_ratio < 200 else 4
+        col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < 400 else 4
         cell_id = f"R{row}C{col}"
         
         past_records = df_history[df_history['Code'] == code_str] if not df_history.empty else pd.DataFrame()
@@ -188,13 +193,12 @@ for cell, s in c4_stats_data.items():
     c4_statistics[cell] = {'prob_a': prob_a, 'prob_b': prob_b, 'total': tot}
 
 print("🕵️ [5단계] 실전 패턴 검색용 최근 3일치 궤적(Path) 추출 중...")
-# [신규 로직] 모든 종목의 최근 3일치 이동 경로를 추출하여 웹에 전달
 recent_paths = {}
 if not df_history.empty:
     df_sorted = df_history.sort_values(by=['Code', 'Date'])
     for code, group in df_sorted.groupby('Code'):
         code_str = str(code).zfill(6)
-        path = group['Cell'].tail(3).tolist() # 최근 3개만 유지
+        path = group['Cell'].tail(3).tolist() 
         recent_paths[code_str] = {
             "name": name_dict.get(code_str, code_str),
             "path": path
@@ -207,7 +211,7 @@ final_web_data = {
     "ma_breakthroughs": ma_breakthrough_stocks,
     "new_highs": new_high_stocks,
     "c4_statistics": c4_statistics,
-    "recent_paths": recent_paths  # 프론트엔드 패턴검색 및 즐겨찾기 추적용
+    "recent_paths": recent_paths
 }
 
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
