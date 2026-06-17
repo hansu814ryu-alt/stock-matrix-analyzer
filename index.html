@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>주도주 트래킹 하이브리드 대시보드</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    
     <script>
         if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
             window.location.href = "mobile.html"; 
@@ -35,6 +38,7 @@
         .journal-form { display: flex; flex-direction: column; gap: 10px; }
         .journal-form input, .journal-form textarea { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: #fff; font-size: 0.9rem; }
         .journal-form textarea { resize: none; height: 100px; }
+        .journal-form input[type="file"] { padding: 8px; font-size: 0.8rem; color: var(--text-muted); cursor: pointer; }
         .journal-form button { background: #10b981; color: #fff; border: none; border-radius: 6px; padding: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .journal-form button:hover { background: #059669; }
         .journal-list { list-style: none; overflow-y: auto; max-height: 350px; display: flex; flex-direction: column; gap: 10px; }
@@ -43,7 +47,7 @@
         .journal-item-title { font-weight: bold; color: #fff; margin-bottom: 4px; font-size: 0.95rem; }
         .journal-item-content { font-size: 0.85rem; color: #cbd5e1; white-space: pre-line; margin-bottom: 10px; }
         .journal-del-btn { position: absolute; top: 10px; right: 12px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; }
-        .journal-img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border-color); display: block; margin-top:10px; }
+        .journal-img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border-color); display: block; margin-top: 10px;}
 
         .verify-controls { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color); flex-wrap: wrap; }
         .verify-select-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
@@ -117,7 +121,7 @@
 
     <header>
         <h1>주도주 트래킹 하이브리드 대시보드</h1>
-        <p>전수조사 데이터 · 실전 패턴 검색기 · 1주 퀀트 백테스팅</p>
+        <p>전수조사 데이터 · 실시간 자동 동기화(Firebase) · 1주 퀀트 백테스팅</p>
     </header>
 
     <div class="section-box">
@@ -128,10 +132,10 @@
                 <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 주도 섹터 매매)">
                 <textarea id="journalContent" placeholder="오늘의 매매 내용, 피드백, 특이사항을 기록하세요."></textarea>
                 <input type="file" id="journalImage" accept="image/*" title="캡쳐본 첨부">
-                <button onclick="saveJournal()">일지 로컬에 저장</button>
+                <button onclick="saveJournal()">일지 클라우드 저장</button>
             </div>
             <div>
-                <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 과거 매매일지 키워드 검색..." onkeyup="filterJournals()">
+                <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 키워드 검색..." onkeyup="filterJournals()">
                 <ul class="journal-list" id="journalList"></ul>
             </div>
         </div>
@@ -187,7 +191,7 @@
     </div>
 
     <div class="section-box">
-        <h2 class="h2-fav">⭐ 나의 즐겨찾기 종목</h2>
+        <h2 class="h2-fav">⭐ 나의 즐겨찾기 종목 <span id="syncStatus" style="font-size:0.8rem; color:#10b981; float:right;">🟢 실시간 연동 중</span></h2>
         <input type="text" id="favSearch" class="search-bar" placeholder="🔍 즐겨찾기 종목명 검색..." onkeyup="renderFavorites()">
         <div class="horizontal-scroll" id="favoriteGrid"></div>
     </div>
@@ -225,19 +229,66 @@
             <div class="memo-area">
                 <label>📌 개별 종목 메모</label>
                 <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항을 메모하세요..."></textarea>
-                <button onclick="saveStockMemo()">메모 로컬 저장</button>
+                <button onclick="saveStockMemo()">클라우드 메모 저장</button>
             </div>
         </div>
     </div>
 
     <script>
-        function getSafeLocalData(key, defaultVal) {
-            try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : defaultVal; } 
-            catch(e) { return defaultVal; }
+        // ==========================================
+        // 🔥 Firebase 설정 (아래 정보를 본인의 키로 꼭 변경하세요!)
+        // ==========================================
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBM-464HJT4MWY_23aPymrskYedPckoeI",
+            authDomain: "stock-dashboard-9f73c.firebaseapp.com",
+            projectId: "stock-dashboard-9f73c",
+            storageBucket: "stock-dashboard-9f73c.firebasestorage.app",
+            messagingSenderId: "227663627685",
+            appId: "1:227663627685:web:a9d13e37ecd6063aba544c"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const userDocRef = db.collection('user_data').doc('my_dashboard');
+
+        // 클라우드 데이터 전역 변수
+        let cloudData = { journals: [], favorites: {}, memos: {} };
+
+        // 🌟 실시간 데이터 구독 (마법의 시작!)
+        userDocRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                cloudData.journals = data.journals || [];
+                cloudData.favorites = data.favorites || {};
+                cloudData.memos = data.memos || {};
+                
+                // 데이터가 갱신되면 화면도 자동으로 다시 그림
+                renderJournals();
+                renderFavorites();
+                
+                // 모달이 열려있다면 즐겨찾기 별 상태와 메모장 실시간 동기화 업데이트
+                if(document.getElementById('stockModal').style.display === 'flex') {
+                    document.getElementById('mMemoInput').value = cloudData.memos[currentStockCode] || '';
+                    const btn = document.getElementById('btnFavoriteToggle');
+                    if (cloudData.favorites[currentStockCode]) {
+                        btn.innerText = '⭐'; btn.classList.add('active');
+                    } else {
+                        btn.innerText = '☆'; btn.classList.remove('active');
+                    }
+                }
+            } else {
+                // 문서가 없으면 최초 생성
+                userDocRef.set(cloudData);
+            }
+        });
+
+        // 클라우드 저장 함수
+        function updateCloud() {
+            userDocRef.set(cloudData, { merge: true }).catch(err => alert("클라우드 저장 실패: " + err.message));
         }
-        function setSafeLocalData(key, val) {
-            try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
-        }
+        // ==========================================
+
         function getProbColor(prob) {
             if (prob >= 50) return '#ef4444'; 
             if (prob >= 30) return '#f59e0b'; 
@@ -262,6 +313,7 @@
                     select.appendChild(opt);
                 });
             });
+            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
         });
 
         const gridContainer = document.getElementById('matrixGrid');
@@ -286,28 +338,21 @@
         }
 
         function toggleFavorite() {
-            let favs = getSafeLocalData('favorite_stocks', {});
-            const btn = document.getElementById('btnFavoriteToggle');
-
-            if (favs[currentStockCode]) {
-                delete favs[currentStockCode];
-                btn.innerText = '☆'; btn.classList.remove('active');
+            if (cloudData.favorites[currentStockCode]) {
+                delete cloudData.favorites[currentStockCode];
             } else {
-                favs[currentStockCode] = currentStockName;
-                btn.innerText = '⭐'; btn.classList.add('active');
+                cloudData.favorites[currentStockCode] = currentStockName;
             }
-            setSafeLocalData('favorite_stocks', favs);
-            renderFavorites();
+            updateCloud(); // Firebase로 쏨 (알아서 다시 렌더링됨)
         }
 
         function renderFavorites() {
             const container = document.getElementById('favoriteGrid');
             container.innerHTML = '';
-            const favs = getSafeLocalData('favorite_stocks', {});
             const keyword = document.getElementById('favSearch').value.toLowerCase();
 
             let hasItem = false;
-            for (const [code, name] of Object.entries(favs)) {
+            for (const [code, name] of Object.entries(cloudData.favorites)) {
                 if(keyword && !name.toLowerCase().includes(keyword) && !code.includes(keyword)) continue;
                 hasItem = true;
                 const card = document.createElement('div');
@@ -394,11 +439,11 @@
             document.getElementById('mFirstDate').innerText = stock.first_date;
             document.getElementById('mFirstCell').innerText = stock.first_cell;
             
-            document.getElementById('mMemoInput').value = getSafeLocalData(`memo_${stock.code}`, '');
+            // Firebase 메모 가져오기
+            document.getElementById('mMemoInput').value = cloudData.memos[stock.code] || '';
             
-            let favs = getSafeLocalData('favorite_stocks', {});
             const btn = document.getElementById('btnFavoriteToggle');
-            if (favs[stock.code]) {
+            if (cloudData.favorites[stock.code]) {
                 btn.innerText = '⭐'; btn.classList.add('active');
             } else {
                 btn.innerText = '☆'; btn.classList.remove('active');
@@ -414,8 +459,9 @@
         function closeModal() { document.getElementById('stockModal').style.display = 'none'; }
         
         function saveStockMemo() {
-            setSafeLocalData(`memo_${currentStockCode}`, document.getElementById('mMemoInput').value);
-            alert("메모가 안전하게 저장되었습니다.");
+            cloudData.memos[currentStockCode] = document.getElementById('mMemoInput').value;
+            updateCloud();
+            alert("클라우드에 메모가 저장되었습니다.");
         }
 
         async function fetchMatrixData() {
@@ -568,7 +614,6 @@
                 });
 
                 if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 포착 카운트 5회 이상인 주도주가 아직 없습니다.</div>';
-                renderFavorites(); 
 
             } catch (error) { console.error("데이터 로드 실패:", error); }
         }
@@ -580,11 +625,6 @@
                 const text = item.innerText.toLowerCase();
                 item.style.display = text.includes(keyword) ? 'block' : 'none';
             });
-        }
-
-        function initJournal() {
-            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
-            renderJournals();
         }
 
         function saveJournal() {
@@ -605,34 +645,29 @@
         }
 
         function _executeJournalSave(date, title, content, imageData) {
-            const journals = getSafeLocalData('trading_journals', []);
-            journals.unshift({ id: Date.now(), date, title, content, image: imageData });
-            setSafeLocalData('trading_journals', journals);
+            cloudData.journals.unshift({ id: Date.now(), date, title, content, image: imageData });
+            updateCloud(); // Firebase로 업로드
             document.getElementById('journalTitle').value = '';
             document.getElementById('journalContent').value = '';
             document.getElementById('journalImage').value = '';
-            renderJournals();
         }
 
         function deleteJournal(id) {
             if (!confirm("삭제하시겠습니까?")) return;
-            let journals = getSafeLocalData('trading_journals', []);
-            journals = journals.filter(j => j.id !== id);
-            setSafeLocalData('trading_journals', journals);
-            renderJournals();
+            cloudData.journals = cloudData.journals.filter(j => j.id !== id);
+            updateCloud(); // Firebase 업데이트
         }
 
         function renderJournals() {
             const listContainer = document.getElementById('journalList');
             listContainer.innerHTML = '';
-            const journals = getSafeLocalData('trading_journals', []);
 
-            if (journals.length === 0) {
+            if (!cloudData.journals || cloudData.journals.length === 0) {
                 listContainer.innerHTML = '<li class="empty-state" style="padding:20px;">기록된 일지가 없습니다.</li>';
                 return;
             }
 
-            journals.forEach(j => {
+            cloudData.journals.forEach(j => {
                 const li = document.createElement('li');
                 li.className = 'journal-item';
                 let mediaHtml = j.image ? `<img src="${j.image}" class="journal-img">` : '';
@@ -650,7 +685,6 @@
 
         window.onload = () => {
             fetchMatrixData();
-            initJournal();
         };
     </script>
 </body>
