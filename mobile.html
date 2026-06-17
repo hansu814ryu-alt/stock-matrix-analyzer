@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주도주 트래킹 (모바일)</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
@@ -109,7 +112,7 @@
 
     <header>
         <h1>주도주 트래킹 (Mobile)</h1>
-        <p>실전 패턴 검색 & 1주 퀀트 백테스트</p>
+        <p>실시간 자동 동기화(Firebase) · 1주 퀀트 백테스트</p>
     </header>
 
     <div class="section">
@@ -119,9 +122,9 @@
             <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 매매)">
             <textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
             <input type="file" id="journalImage" accept="image/*">
-            <button onclick="saveJournal()">일지 로컬에 저장</button>
+            <button onclick="saveJournal()">일지 클라우드 저장</button>
         </div>
-        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 과거 일지 검색..." onkeyup="filterJournals()">
+        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 검색..." onkeyup="filterJournals()">
         <ul class="journal-list" id="journalList"></ul>
     </div>
 
@@ -154,7 +157,7 @@
     </div>
 
     <div class="section">
-        <h2 class="h2-fav">⭐ 즐겨찾기</h2>
+        <h2 class="h2-fav">⭐ 즐겨찾기 <span id="syncStatus" style="font-size:0.75rem; color:#10b981; float:right; line-height:2;">🟢 실시간 연동 중</span></h2>
         <input type="text" id="favSearch" class="search-bar" placeholder="🔍 종목명 검색..." onkeyup="renderFavorites()">
         <div class="horizontal-scroll" id="favoriteGrid">
             <div style="color:var(--text-muted); font-size:0.8rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
@@ -202,20 +205,61 @@
         </div>
         
         <div class="memo-area">
-            <label>📌 종목 메모 (로컬 저장)</label>
+            <label>📌 종목 메모 (클라우드 저장)</label>
             <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항 메모..."></textarea>
             <button onclick="saveStockMemo()">메모 저장</button>
         </div>
     </div>
 
     <script>
-        function getSafeLocalData(key, defaultVal) {
-            try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : defaultVal; } 
-            catch(e) { return defaultVal; }
+        // ==========================================
+        // 🔥 Firebase 설정 (아래 정보를 본인의 키로 꼭 변경하세요!)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBM-464HJT4MWY_23aPymrskYedPckoeI",
+            authDomain: "stock-dashboard-9f73c.firebaseapp.com",
+            projectId: "stock-dashboard-9f73c",
+            storageBucket: "stock-dashboard-9f73c.firebasestorage.app",
+            messagingSenderId: "227663627685",
+            appId: "1:227663627685:web:a9d13e37ecd6063aba544c"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const userDocRef = db.collection('user_data').doc('my_dashboard');
+
+        let cloudData = { journals: [], favorites: {}, memos: {} };
+
+        // 🌟 실시간 데이터 구독
+        userDocRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                cloudData.journals = data.journals || [];
+                cloudData.favorites = data.favorites || {};
+                cloudData.memos = data.memos || {};
+                
+                renderJournals();
+                renderFavorites();
+                
+                if(document.getElementById('stockModal').style.display === 'flex') {
+                    document.getElementById('mMemoInput').value = cloudData.memos[currentStockCode] || '';
+                    const btn = document.getElementById('btnFavoriteToggle');
+                    if (cloudData.favorites[currentStockCode]) {
+                        btn.innerText = '⭐'; btn.classList.add('active');
+                    } else {
+                        btn.innerText = '☆'; btn.classList.remove('active');
+                    }
+                }
+            } else {
+                userDocRef.set(cloudData);
+            }
+        });
+
+        function updateCloud() {
+            userDocRef.set(cloudData, { merge: true }).catch(err => alert("클라우드 저장 실패: " + err.message));
         }
-        function setSafeLocalData(key, val) {
-            try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
-        }
+        // ==========================================
+
         function getProbColor(prob) {
             if (prob >= 50) return '#ef4444'; 
             if (prob >= 30) return '#f59e0b'; 
@@ -248,6 +292,7 @@
                     select.appendChild(opt);
                 });
             });
+            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
         });
 
         function triggerModalByCode(code, name) {
@@ -261,28 +306,21 @@
         }
 
         function toggleFavorite() {
-            let favs = getSafeLocalData('favorite_stocks', {});
-            const btn = document.getElementById('btnFavoriteToggle');
-
-            if (favs[currentStockCode]) {
-                delete favs[currentStockCode];
-                btn.innerText = '☆'; btn.classList.remove('active');
+            if (cloudData.favorites[currentStockCode]) {
+                delete cloudData.favorites[currentStockCode];
             } else {
-                favs[currentStockCode] = currentStockName;
-                btn.innerText = '⭐'; btn.classList.add('active');
+                cloudData.favorites[currentStockCode] = currentStockName;
             }
-            setSafeLocalData('favorite_stocks', favs);
-            renderFavorites();
+            updateCloud(); 
         }
 
         function renderFavorites() {
             const container = document.getElementById('favoriteGrid');
             container.innerHTML = '';
-            const favs = getSafeLocalData('favorite_stocks', {});
             const keyword = document.getElementById('favSearch').value.toLowerCase();
 
             let hasItem = false;
-            for (const [code, name] of Object.entries(favs)) {
+            for (const [code, name] of Object.entries(cloudData.favorites)) {
                 if(keyword && !name.toLowerCase().includes(keyword) && !code.includes(keyword)) continue;
                 hasItem = true;
                 const card = document.createElement('div');
@@ -368,11 +406,11 @@
             document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
             document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
             document.getElementById('mFirstDate').innerText = stock.first_date;
-            document.getElementById('mMemoInput').value = getSafeLocalData(`memo_${stock.code}`, '');
             
-            let favs = getSafeLocalData('favorite_stocks', {});
+            document.getElementById('mMemoInput').value = cloudData.memos[stock.code] || '';
+            
             const btn = document.getElementById('btnFavoriteToggle');
-            if (favs[stock.code]) {
+            if (cloudData.favorites[stock.code]) {
                 btn.innerText = '⭐'; btn.classList.add('active');
             } else {
                 btn.innerText = '☆'; btn.classList.remove('active');
@@ -392,8 +430,9 @@
         }
         
         function saveStockMemo() {
-            setSafeLocalData(`memo_${currentStockCode}`, document.getElementById('mMemoInput').value);
-            alert("메모가 저장되었습니다.");
+            cloudData.memos[currentStockCode] = document.getElementById('mMemoInput').value;
+            updateCloud();
+            alert("메모가 클라우드에 저장되었습니다.");
         }
 
         async function fetchMatrixData() {
@@ -409,7 +448,7 @@
                     if (data.captured[cell].length > maxCount) maxCount = data.captured[cell].length;
                 }
 
-                // 1. 모바일 매트릭스 6칸
+                // 1. 모바일 매트릭스 6칸 
                 const gridContainer = document.getElementById('matrixGrid');
                 gridContainer.innerHTML = '';
                 let hasData = false;
@@ -449,7 +488,7 @@
                 }
                 if(!hasData) gridContainer.innerHTML = '<div class="empty-state">조건에 포착된 종목이 없습니다.</div>';
 
-                // 2. 신고가
+                // 2. 신고가 
                 const highContainer = document.getElementById('newHighGrid');
                 highContainer.innerHTML = '';
                 const highList = data.new_highs || [];
@@ -467,7 +506,7 @@
                     });
                 }
 
-                // 3. 이평선
+                // 3. 이평선 
                 const maContainer = document.getElementById('maList');
                 maContainer.innerHTML = '';
                 
@@ -498,7 +537,7 @@
                     });
                 }
 
-                // 4. 백테스팅
+                // 4. 백테스팅 누적 랭킹 
                 const rankContainer = document.getElementById('rankingContainer');
                 rankContainer.innerHTML = '';
                 const c4Stats = data.c4_statistics || {};
@@ -567,7 +606,7 @@
                 });
 
                 if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 카운트 5회 이상 주도주가 없습니다.</div>';
-                renderFavorites();
+                // Firebase 데이터를 기반으로 즐겨찾기는 별도 렌더링되므로 여기서 호출 생략.
 
             } catch (error) { console.error("데이터 로드 실패:", error); }
         }
@@ -579,11 +618,6 @@
                 const text = item.innerText.toLowerCase();
                 item.style.display = text.includes(keyword) ? 'block' : 'none';
             });
-        }
-
-        function initJournal() {
-            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
-            renderJournals();
         }
 
         function saveJournal() {
@@ -604,34 +638,29 @@
         }
 
         function _executeJournalSave(date, title, content, imageData) {
-            const journals = getSafeLocalData('trading_journals', []);
-            journals.unshift({ id: Date.now(), date, title, content, image: imageData });
-            setSafeLocalData('trading_journals', journals);
+            cloudData.journals.unshift({ id: Date.now(), date, title, content, image: imageData });
+            updateCloud();
             document.getElementById('journalTitle').value = '';
             document.getElementById('journalContent').value = '';
             document.getElementById('journalImage').value = '';
-            renderJournals();
         }
 
         function deleteJournal(id) {
             if (!confirm("일지를 삭제하시겠습니까?")) return;
-            let journals = getSafeLocalData('trading_journals', []);
-            journals = journals.filter(j => j.id !== id);
-            setSafeLocalData('trading_journals', journals);
-            renderJournals();
+            cloudData.journals = cloudData.journals.filter(j => j.id !== id);
+            updateCloud();
         }
 
         function renderJournals() {
             const listContainer = document.getElementById('journalList');
             listContainer.innerHTML = '';
-            const journals = getSafeLocalData('trading_journals', []);
 
-            if (journals.length === 0) {
+            if (!cloudData.journals || cloudData.journals.length === 0) {
                 listContainer.innerHTML = '<li class="empty-state" style="padding:20px;">기록된 일지가 없습니다.</li>';
                 return;
             }
 
-            journals.forEach(j => {
+            cloudData.journals.forEach(j => {
                 const li = document.createElement('li');
                 li.className = 'journal-item';
                 let mediaHtml = j.image ? `<img src="${j.image}" class="journal-img">` : '';
@@ -649,7 +678,6 @@
 
         window.onload = () => {
             fetchMatrixData();
-            initJournal();
         };
     </script>
 </body>
