@@ -1,219 +1,60 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주도주 트래킹 (모바일)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>주도주 트래킹 (모바일)</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+<style>
+:root {
+--bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
+@@ -109,7 +112,7 @@
 
-        :root {
-            /* 완전한 다크/블랙 베이스 (OLED 최적화) */
-            --bg-color: #000000; 
-            --card-bg: #121212; 
-            --text-main: #f4f4f5; 
-            --text-muted: #a1a1aa;
-            --border-color: #27272a; 
-            --accent: #3b82f6; 
-            --verify: #8b5cf6;
-            --favorite: #eab308;
-            --r4: #ef4444; --r3: #f97316; --r2: #f59e0b; --r1: #10b981;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; letter-spacing:-0.3px;}
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 12px 10px; line-height: 1.6; font-size: 14px; }
-        
-        header { margin-bottom: 24px; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-top:10px;}
-        header h1 { 
-            font-size: 1.6rem; 
-            font-weight: 900; 
-            background: linear-gradient(90deg, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 6px; 
-        }
-        header p { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
-
-        .section { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 16px; margin-bottom: 20px; }
-        .section h2 { font-size: 1.15rem; margin-bottom: 18px; font-weight: 800; display:flex; align-items:center; gap:8px;}
-        
-        .h2-matrix::before { content:''; display:block; width:4px; height:18px; background:var(--accent); border-radius:2px; }
-        .h2-ma::before { content:''; display:block; width:4px; height:18px; background:#f43f5e; border-radius:2px; }
-        .h2-fav::before { content:''; display:block; width:4px; height:18px; background:var(--favorite); border-radius:2px; }
-        .h2-rank::before { content:''; display:block; width:4px; height:18px; background:#10b981; border-radius:2px; }
-        .h2-high::before { content:''; display:block; width:4px; height:18px; background:#f59e0b; border-radius:2px; }
-        .h2-verify::before { content:''; display:block; width:4px; height:18px; background:var(--verify); border-radius:2px; }
-        .h2-cloud::before { content:''; display:block; width:4px; height:18px; background:#0ea5e9; border-radius:2px; }
-
-        .search-bar { width: 100%; background: #000; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; color: #fff; margin-bottom: 16px; font-size: 16px; }
-
-        .matrix-mobile-container { display: flex; flex-direction: column; gap: 12px; }
-        .matrix-cell { border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; background: #121212;}
-        .cell-header { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 4px; }
-        .cell-title { font-size: 1.1rem; font-weight: 900; color: #fff;}
-        .cell-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 600;}
-        .empty-state { display: flex; justify-content: center; align-items: center; font-size: 0.85rem; color: var(--text-muted); background: #000; border-radius: 8px; padding: 16px; border: 1px dashed var(--border-color); font-weight:600;}
-        
-        .stock-list, .ma-list, .journal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .stock-item { font-size: 0.95rem; padding: 12px 14px; background: #27272a; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight:700;}
-        .stock-item:active { background: #3f3f46; }
-
-        .badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 800; color: #fff; }
-        .bg-ma5 { background-color: #3b82f6; } .bg-ma20 { background-color: #eab308; } .bg-ma60 { background-color: #a855f7; }
-        .bg-ath { background-color: #ef4444; } .bg-52w { background-color: #f59e0b; }
-
-        .horizontal-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 12px; scroll-snap-type: x mandatory; margin: 0 -8px; padding: 0 8px 12px 8px; }
-        .horizontal-scroll::-webkit-scrollbar { display: none; }
-        
-        .ranking-container { display: flex; flex-direction: column; gap: 16px; }
-        .date-title { font-size: 0.9rem; color: #10b981; margin-bottom: 10px; font-weight: 800; background: rgba(16, 185, 129, 0.15); padding: 6px 10px; border-radius: 4px; display: inline-block;}
-        
-        /* 랭킹 카드 */
-        .ranking-card { flex: 0 0 88vw; scroll-snap-align: center; background: #18181b; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .rank-info { display: flex; justify-content: space-between; align-items: center; }
-        .rank-name { font-size: 1.1rem; font-weight: 900; color:#fff;}
-        .rank-code { font-size: 0.8rem; color: var(--text-muted); background: #27272a; padding: 4px 8px; border-radius: 4px; font-weight:600;}
-        .rank-path { font-size: 0.85rem; color: #e4e4e7; background: #09090b; padding: 12px; border-radius: 8px;}
-
-        .stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; margin-top: 6px; }
-        .progress-bg { width: 100%; background: #000; border-radius: 4px; height: 6px; margin-top: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);}
-        .progress-fill { height: 100%; border-radius: 4px; }
-        .rank-count { font-size: 1.3rem; color: #f43f5e; font-weight: 900; text-align: right; margin-top: 6px;}
-
-        /* 입력 폼 및 버튼 플랫 디자인 */
-        .journal-form input, .journal-form textarea, .verify-select-group select, .cloud-input-group input { 
-            background: #000; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; color: #fff; font-size: 16px; font-weight:500;
-        }
-        .journal-form button, .btn-verify, .btn-cloud-up, .btn-cloud-down { 
-            border-radius: 8px; padding: 14px; font-weight: 800; font-size: 1rem; border: none;
-        }
-        .journal-form button { background: #10b981; color:#fff;}
-        .btn-verify { background: var(--verify); color:#fff; margin-top: 8px;}
-        .btn-cloud-up { background: #0ea5e9; color:#fff;} .btn-cloud-down { background: #f59e0b; color:#fff;}
-
-        .journal-item { background: #18181b; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
-        .journal-item-title { font-size: 1.05rem; font-weight: 900; color:#fff; margin-bottom: 6px;}
-        
-        .modal { background: rgba(0,0,0,0.95); padding: 15px; }
-        .modal-content { border-radius: 16px; padding: 25px 20px; border: 1px solid rgba(255,255,255,0.1); background: var(--card-bg);}
-        .chart-tabs button { border-radius: 6px; padding: 12px; font-size: 0.95rem; font-weight:800; background:#27272a; color:var(--text-muted); border:none;}
-        .chart-tabs button.active { background:var(--accent); color:#fff;}
-
-        .modal-info-box { background: #000; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 0.9rem; display: flex; justify-content: space-between; border: 1px solid var(--border-color); }
-        .modal-info-box span { color: var(--text-muted); font-weight:600;}
-        .modal-info-box strong { color: #fff; font-weight: 800; font-family:monospace; font-size:1.05rem;}
-
-        .r4-cell { border-top: 3px solid var(--r4); } .r3-cell { border-top: 3px solid var(--r3); }
-        .r2-cell { border-top: 3px solid var(--r2); } .r1-cell { border-top: 3px solid var(--r1); }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>주도주 트래킹 (Mobile)</h1>
+<header>
+<h1>주도주 트래킹 (Mobile)</h1>
+        <p>실전 패턴 검색 & 1주 퀀트 백테스트</p>
         <p>실시간 자동 동기화(Firebase) · 1주 퀀트 백테스트</p>
-    </header>
+</header>
 
-    <div class="section">
-        <h2 class="h2-rank">📝 매매일지 장부</h2>
-        <div class="journal-form">
-            <input type="date" id="journalDate">
-            <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 매매)">
-            <textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
-            <input type="file" id="journalImage" accept="image/*">
+<div class="section">
+@@ -119,9 +122,9 @@ <h2 class="h2-rank">📝 매매일지 장부</h2>
+<input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 매매)">
+<textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
+<input type="file" id="journalImage" accept="image/*">
+            <button onclick="saveJournal()">일지 로컬에 저장</button>
             <button onclick="saveJournal()">일지 클라우드 저장</button>
-        </div>
+</div>
+        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 과거 일지 검색..." onkeyup="filterJournals()">
         <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 검색..." onkeyup="filterJournals()">
-        <ul class="journal-list" id="journalList"></ul>
-    </div>
+<ul class="journal-list" id="journalList"></ul>
+</div>
 
-    <div class="section">
-        <h2 class="h2-verify">🕵️ 실전 패턴 검색기</h2>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">최근 3일 궤적을 선택해 종목을 찾습니다.</p>
-        <div class="verify-controls">
-            <div class="verify-select-group">
-                <label>D-2 (2일전)</label>
-                <select id="vDay1"><option value="">상관 없음</option></select>
-            </div>
-            <div class="verify-select-group">
-                <label>D-1 (어제)</label>
-                <select id="vDay2"><option value="">상관 없음</option></select>
-            </div>
-            <div class="verify-select-group">
-                <label>D-Day (오늘)</label>
-                <select id="vDay3"><option value="">상관 없음</option></select>
-            </div>
-            <button class="btn-verify" onclick="searchPattern()">🔍 패턴 검색</button>
-        </div>
-        <div class="horizontal-scroll" id="verifyGrid">
-            <div class="empty-state">패턴 선택 후 검색해주세요.</div>
-        </div>
-    </div>
+@@ -154,7 +157,7 @@ <h2 class="h2-high">🏆 52주/역사적 신고가 (오늘)</h2>
+</div>
 
-    <div class="section">
-        <h2 class="h2-high">🏆 52주/역사적 신고가 (오늘)</h2>
-        <div class="horizontal-scroll" id="newHighGrid"></div>
-    </div>
-
-    <div class="section">
+<div class="section">
+        <h2 class="h2-fav">⭐ 즐겨찾기</h2>
         <h2 class="h2-fav">⭐ 즐겨찾기 <span id="syncStatus" style="font-size:0.75rem; color:#10b981; float:right; line-height:2;">🟢 실시간 연동 중</span></h2>
-        <input type="text" id="favSearch" class="search-bar" placeholder="🔍 종목명 검색..." onkeyup="renderFavorites()">
-        <div class="horizontal-scroll" id="favoriteGrid">
-            <div style="color:var(--text-muted); font-size:0.8rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
-        </div>
-    </div>
+<input type="text" id="favSearch" class="search-bar" placeholder="🔍 종목명 검색..." onkeyup="renderFavorites()">
+<div class="horizontal-scroll" id="favoriteGrid">
+<div style="color:var(--text-muted); font-size:0.8rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
+@@ -202,20 +205,61 @@ <h2 class="modal-title" id="mName">종목명</h2>
+</div>
 
-    <div class="section">
-        <h2 class="h2-matrix">📊 핵심 포착 (R2C3 ~ R4C4)</h2>
-        <div class="matrix-mobile-container" id="matrixGrid"></div>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-ma">🚀 강력 이평선 돌파 (오늘)</h2>
-        <ul class="ma-list" id="maList"></ul>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-rank">🔥 C4 랭킹 (확률순 정렬)</h2>
-        <div class="ranking-container" id="rankingContainer"></div>
-    </div>
-
-    <div class="modal" id="stockModal">
-        <div class="modal-header">
-            <div class="modal-title-wrapper">
-                <h2 class="modal-title" id="mName">종목명</h2>
-                <div id="btnFavoriteToggle" class="btn-favorite-toggle" onclick="toggleFavorite()">☆</div>
-            </div>
-            <div class="modal-close" onclick="closeModal()">&times;</div>
-        </div>
-        
-        <div class="chart-tabs">
-            <button class="active" onclick="changeChart('day', this)">일봉</button>
-            <button onclick="changeChart('week', this)">주봉</button>
-            <button onclick="changeChart('month', this)">월봉</button>
-        </div>
-        <div class="chart-img-area">
-            <img id="mChartImg" src="" alt="차트 로딩 중...">
-        </div>
-
-        <div class="modal-info-box"><span>종목 코드</span> <strong id="mCode">000000</strong></div>
-        <div class="modal-info-box"><span>오늘 상승률</span> <strong id="mChange" style="color: #ef4444;">+0.0%</strong></div>
-        <div class="modal-info-box"><span>60일 평균비 거래량</span> <strong id="mVolume">0.0%</strong></div>
-        <div class="modal-info-box" style="border: 1px dashed var(--accent); margin-top: 10px;">
-            <span>🎯 최초 돌파 날짜</span> <strong id="mFirstDate">2026-00-00</strong>
-        </div>
-        
-        <div class="memo-area">
+<div class="memo-area">
+            <label>📌 종목 메모 (로컬 저장)</label>
             <label>📌 종목 메모 (클라우드 저장)</label>
-            <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항 메모..."></textarea>
-            <button onclick="saveStockMemo()">메모 저장</button>
-        </div>
-    </div>
+<textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항 메모..."></textarea>
+<button onclick="saveStockMemo()">메모 저장</button>
+</div>
+</div>
 
-    <script>
+<script>
+        function getSafeLocalData(key, defaultVal) {
+            try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : defaultVal; } 
+            catch(e) { return defaultVal; }
+        }
+        function setSafeLocalData(key, val) {
+            try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
         // ==========================================
         // 🔥 Firebase 설정 (아래 정보를 본인의 키로 꼭 변경하세요!)
         // ==========================================
@@ -259,428 +100,184 @@
 
         function updateCloud() {
             userDocRef.set(cloudData, { merge: true }).catch(err => alert("클라우드 저장 실패: " + err.message));
-        }
+}
         // ==========================================
 
-        function getProbColor(prob) {
-            if (prob >= 50) return '#ef4444'; 
-            if (prob >= 30) return '#f59e0b'; 
-            return '#64748b'; 
-        }
-
-        let globalCapturedData = {};
-        let globalRecentPaths = {}; 
-        let currentStockCode = '';
-        let currentStockName = '';
-
-        const theme2Names = {
-            "R4C4": "추세 주도", "R4C3": "수급 동반 돌파", "R4C2": "매물 공백 상승", "R4C1": "저거래 급등",
-            "R3C4": "모멘텀 폭발", "R3C3": "강세 진입", "R3C2": "추세 순응", "R3C1": "데드캣 바운스",
-            "R2C4": "수급 응축", "R2C3": "저항대 소화", "R2C2": "점진적 상승", "R2C1": "기술적 보합",
-            "R1C4": "손바뀜/매집", "R1C3": "지지선 테스트", "R1C2": "박스권 횡보", "R1C1": "모멘텀 부재"
-        };
-        const rowRanges = { 4: "상승 12%↑", 3: "상승 6~12%", 2: "상승 3~6%", 1: "상승 3%↓" };
-        const colTitles = { 3: "평균비 200~400%", 4: "평균비 400% 이상" };
-        const colRanges = { 4: "거래 400%↑", 3: "거래 200~400%", 2: "거래 100~200%", 1: "거래 100%↓" };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const cells = [];
-            for(let r=4; r>=1; r--) for(let c=1; c<=4; c++) cells.push(`R${r}C${c}`);
-            ['vDay1', 'vDay2', 'vDay3'].forEach(id => {
-                const select = document.getElementById(id);
-                cells.forEach(cell => {
-                    const opt = document.createElement('option');
-                    opt.value = cell; opt.innerText = cell;
-                    select.appendChild(opt);
-                });
-            });
+function getProbColor(prob) {
+if (prob >= 50) return '#ef4444'; 
+if (prob >= 30) return '#f59e0b'; 
+@@ -248,6 +292,7 @@ <h2 class="modal-title" id="mName">종목명</h2>
+select.appendChild(opt);
+});
+});
             document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
-        });
+});
 
-        function triggerModalByCode(code, name) {
-            let foundStock = null;
-            for (const cell in globalCapturedData) {
-                const target = globalCapturedData[cell].find(s => s.code === code);
-                if (target) { foundStock = target; break; }
-            }
-            if (foundStock) openModal(foundStock);
-            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-" });
-        }
+function triggerModalByCode(code, name) {
+@@ -261,28 +306,21 @@ <h2 class="modal-title" id="mName">종목명</h2>
+}
 
-        function toggleFavorite() {
+function toggleFavorite() {
+            let favs = getSafeLocalData('favorite_stocks', {});
+            const btn = document.getElementById('btnFavoriteToggle');
+
+            if (favs[currentStockCode]) {
+                delete favs[currentStockCode];
+                btn.innerText = '☆'; btn.classList.remove('active');
             if (cloudData.favorites[currentStockCode]) {
                 delete cloudData.favorites[currentStockCode];
-            } else {
+} else {
+                favs[currentStockCode] = currentStockName;
+                btn.innerText = '⭐'; btn.classList.add('active');
                 cloudData.favorites[currentStockCode] = currentStockName;
-            }
+}
+            setSafeLocalData('favorite_stocks', favs);
+            renderFavorites();
             updateCloud(); 
-        }
+}
 
-        function renderFavorites() {
-            const container = document.getElementById('favoriteGrid');
-            container.innerHTML = '';
-            const keyword = document.getElementById('favSearch').value.toLowerCase();
+function renderFavorites() {
+const container = document.getElementById('favoriteGrid');
+container.innerHTML = '';
+            const favs = getSafeLocalData('favorite_stocks', {});
+const keyword = document.getElementById('favSearch').value.toLowerCase();
 
-            let hasItem = false;
+let hasItem = false;
+            for (const [code, name] of Object.entries(favs)) {
             for (const [code, name] of Object.entries(cloudData.favorites)) {
-                if(keyword && !name.toLowerCase().includes(keyword) && !code.includes(keyword)) continue;
-                hasItem = true;
-                const card = document.createElement('div');
-                card.className = 'ranking-card';
-                card.style.flex = '0 0 60vw'; 
-                card.onclick = () => triggerModalByCode(code, name);
+if(keyword && !name.toLowerCase().includes(keyword) && !code.includes(keyword)) continue;
+hasItem = true;
+const card = document.createElement('div');
+@@ -368,11 +406,11 @@ <h2 class="modal-title" id="mName">종목명</h2>
+document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
+document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
+document.getElementById('mFirstDate').innerText = stock.first_date;
+            document.getElementById('mMemoInput').value = getSafeLocalData(`memo_${stock.code}`, '');
 
-                let pathStr = "기록 없음";
-                if(globalRecentPaths[code] && globalRecentPaths[code].path.length > 0) {
-                    pathStr = globalRecentPaths[code].path.join(' ➔ ');
-                }
-
-                card.innerHTML = `
-                    <div class="rank-info"><span class="rank-name">${name}</span><span class="rank-code">${code}</span></div>
-                    <div class="rank-path" style="margin-top:8px; color:var(--accent); font-weight:bold;">최근 흐름: ${pathStr}</div>
-                    <div style="text-align:right; margin-top:5px;"><span class="rank-count" style="color:var(--favorite);">⭐</span></div>
-                `;
-                container.appendChild(card);
-            }
-            if(!hasItem) container.innerHTML = '<div class="empty-state" style="width:100%;">등록된 즐겨찾기가 없거나 검색 결과가 없습니다.</div>';
-        }
-
-        function searchPattern() {
-            const d1 = document.getElementById('vDay1').value; 
-            const d2 = document.getElementById('vDay2').value; 
-            const d3 = document.getElementById('vDay3').value; 
-            
-            const container = document.getElementById('verifyGrid');
-            container.innerHTML = '';
-            
-            if(!d1 && !d2 && !d3) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">조건을 선택해주세요.</div>';
-                return;
-            }
-            
-            let results = [];
-            for (const [code, info] of Object.entries(globalRecentPaths)) {
-                const path = info.path; 
-                const len = path.length;
-                
-                const stockD3 = len >= 1 ? path[len-1] : ""; 
-                const stockD2 = len >= 2 ? path[len-2] : ""; 
-                const stockD1 = len >= 3 ? path[len-3] : ""; 
-                
-                let match = true;
-                if (d3 && stockD3 !== d3) match = false;
-                if (d2 && stockD2 !== d2) match = false;
-                if (d1 && stockD1 !== d1) match = false;
-                
-                if (match) results.push({code, name: info.name, path});
-            }
-            
-            if (results.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">일치하는 종목이 없습니다.</div>';
-                return;
-            }
-            
-            results.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'ranking-card';
-                card.onclick = () => triggerModalByCode(item.code, item.name);
-                card.innerHTML = `
-                    <div class="rank-info"><span class="rank-name">${item.name}</span><span class="rank-code">${item.code}</span></div>
-                    <div class="rank-path" style="margin-top:8px; color:#fff;">발견된 궤적: <br><strong style="color:var(--accent); font-size:1rem;">${item.path.join(' ➔ ')}</strong></div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function changeChart(type, btnObj) {
-            const buttons = document.querySelectorAll('.chart-tabs button');
-            buttons.forEach(b => b.classList.remove('active'));
-            btnObj.classList.add('active');
-            document.getElementById('mChartImg').src = `https://ssl.pstatic.net/imgfinance/chart/item/candle/${type}/${currentStockCode}.png?sidcode=${new Date().getTime()}`;
-        }
-
-        function openModal(stock) {
-            currentStockCode = stock.code;
-            currentStockName = stock.name;
-            
-            document.getElementById('mName').innerText = stock.name;
-            document.getElementById('mCode').innerText = stock.code;
-            document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
-            document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
-            document.getElementById('mFirstDate').innerText = stock.first_date;
-            
+            let favs = getSafeLocalData('favorite_stocks', {});
             document.getElementById('mMemoInput').value = cloudData.memos[stock.code] || '';
             
-            const btn = document.getElementById('btnFavoriteToggle');
+const btn = document.getElementById('btnFavoriteToggle');
+            if (favs[stock.code]) {
             if (cloudData.favorites[stock.code]) {
-                btn.innerText = '⭐'; btn.classList.add('active');
-            } else {
-                btn.innerText = '☆'; btn.classList.remove('active');
-            }
+btn.innerText = '⭐'; btn.classList.add('active');
+} else {
+btn.innerText = '☆'; btn.classList.remove('active');
+@@ -392,8 +430,9 @@ <h2 class="modal-title" id="mName">종목명</h2>
+}
 
-            const tabs = document.querySelectorAll('.chart-tabs button');
-            tabs.forEach(b => b.classList.remove('active'));
-            tabs[0].classList.add('active');
-            document.getElementById('mChartImg').src = `https://ssl.pstatic.net/imgfinance/chart/item/candle/day/${stock.code}.png?sidcode=${new Date().getTime()}`;
-            document.getElementById('stockModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; 
-        }
-
-        function closeModal() { 
-            document.getElementById('stockModal').style.display = 'none'; 
-            document.body.style.overflow = 'auto'; 
-        }
-        
-        function saveStockMemo() {
+function saveStockMemo() {
+            setSafeLocalData(`memo_${currentStockCode}`, document.getElementById('mMemoInput').value);
+            alert("메모가 저장되었습니다.");
             cloudData.memos[currentStockCode] = document.getElementById('mMemoInput').value;
             updateCloud();
             alert("메모가 클라우드에 저장되었습니다.");
-        }
+}
 
-        async function fetchMatrixData() {
-            try {
-                const response = await fetch('matrix_data.json');
-                const data = await response.json();
-                globalCapturedData = data.captured || {};
-                globalRecentPaths = data.recent_paths || {}; 
-                
-                const todayStr = new Date().toISOString().substring(0, 10);
-                let maxCount = 1;
-                for (let cell in data.captured) {
-                    if (data.captured[cell].length > maxCount) maxCount = data.captured[cell].length;
-                }
+async function fetchMatrixData() {
+@@ -409,7 +448,7 @@ <h2 class="modal-title" id="mName">종목명</h2>
+if (data.captured[cell].length > maxCount) maxCount = data.captured[cell].length;
+}
 
+                // 1. 모바일 매트릭스 6칸
                 // 1. 모바일 매트릭스 6칸 
-                const gridContainer = document.getElementById('matrixGrid');
-                gridContainer.innerHTML = '';
-                let hasData = false;
+const gridContainer = document.getElementById('matrixGrid');
+gridContainer.innerHTML = '';
+let hasData = false;
+@@ -449,7 +488,7 @@ <h2 class="modal-title" id="mName">종목명</h2>
+}
+if(!hasData) gridContainer.innerHTML = '<div class="empty-state">조건에 포착된 종목이 없습니다.</div>';
 
-                for (let r = 4; r >= 2; r--) {
-                    for (let c = 4; c >= 3; c--) {
-                        const cellId = `R${r}C${c}`;
-                        const stocks = data.captured[cellId] || [];
-                        
-                        let intensity = stocks.length > 0 ? (stocks.length / maxCount) * 0.4 : 0;
-
-                        if (stocks.length > 0) {
-                            hasData = true;
-                            const cell = document.createElement('div');
-                            cell.className = `matrix-cell r${r}-cell`;
-                            cell.style.background = `linear-gradient(rgba(239, 68, 68, ${intensity}), rgba(239, 68, 68, ${intensity})), var(--card-bg)`;
-                            
-                            cell.innerHTML = `
-                                <div class="cell-header" style="color: var(--r${r}); border-bottom: 1px dashed rgba(255,255,255,0.2);">
-                                    <span class="cell-title">${cellId} [${theme2Names[cellId]}]</span>
-                                    <span class="cell-subtitle">📈 ${rowRanges[r]} | 📊 ${colRanges[c]}</span>
-                                </div>
-                                <ul class="stock-list" id="mlist-${cellId}"></ul>
-                            `;
-                            gridContainer.appendChild(cell);
-
-                            const ul = document.getElementById(`mlist-${cellId}`);
-                            stocks.forEach(stock => {
-                                const li = document.createElement('li');
-                                li.className = 'stock-item';
-                                li.onclick = () => openModal(stock);
-                                li.innerHTML = `<span>${stock.name}</span><span class="stock-change" style="color: var(--r${r});">+${stock.change}%</span>`;
-                                ul.appendChild(li);
-                            });
-                        }
-                    }
-                }
-                if(!hasData) gridContainer.innerHTML = '<div class="empty-state">조건에 포착된 종목이 없습니다.</div>';
-
+                // 2. 신고가
                 // 2. 신고가 
-                const highContainer = document.getElementById('newHighGrid');
-                highContainer.innerHTML = '';
-                const highList = data.new_highs || [];
-                if(highList.length === 0) {
-                    highContainer.innerHTML = '<div class="empty-state" style="width:100%;">오늘 포착된 신고가 종목이 없습니다.</div>';
-                } else {
-                    highList.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'ranking-card';
-                        card.style.flex = '0 0 60vw';
-                        card.onclick = () => triggerModalByCode(item.code, item.name);
-                        const badgeColor = item.type === '역사적 신고가' ? 'bg-ath' : 'bg-52w';
-                        card.innerHTML = `<div class="rank-info"><span class="rank-name">${item.name}</span><span class="badge ${badgeColor}">${item.type}</span></div><div class="rank-info"><span class="rank-code">${item.code}</span></div>`;
-                        highContainer.appendChild(card);
-                    });
-                }
+const highContainer = document.getElementById('newHighGrid');
+highContainer.innerHTML = '';
+const highList = data.new_highs || [];
+@@ -467,7 +506,7 @@ <h2 class="modal-title" id="mName">종목명</h2>
+});
+}
 
+                // 3. 이평선
                 // 3. 이평선 
-                const maContainer = document.getElementById('maList');
-                maContainer.innerHTML = '';
-                
-                let maStocks = data.ma_breakthroughs || [];
-                maStocks.forEach(s => { s.breakCount = (s.ma5?1:0) + (s.ma20?1:0) + (s.ma60?1:0); });
-                const filteredMaStocks = maStocks.filter(s => s.breakCount >= 2).sort((a, b) => b.breakCount - a.breakCount);
+const maContainer = document.getElementById('maList');
+maContainer.innerHTML = '';
 
-                if(filteredMaStocks.length === 0) {
-                    maContainer.innerHTML = '<li class="empty-state">이평선 2개 이상 동시 돌파 종목이 없습니다.</li>';
-                } else {
-                    filteredMaStocks.forEach(stock => {
-                        const li = document.createElement('li');
-                        li.className = 'stock-item';
-                        li.onclick = () => triggerModalByCode(stock.code, stock.name);
-                        let badges = '';
-                        if (stock.ma5) badges += '<span class="badge bg-ma5">5일</span> ';
-                        if (stock.ma20) badges += '<span class="badge bg-ma20">20일</span> ';
-                        if (stock.ma60) badges += '<span class="badge bg-ma60">60일</span> ';
-                        
-                        li.innerHTML = `
-                            <div>
-                                <strong>${stock.name}</strong> <span style="font-size:0.7rem; color:var(--accent);">(${todayStr})</span>
-                                <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${stock.code}</span>
-                            </div>
-                            <div class="ma-badges">${badges}</div>
-                        `;
-                        maContainer.appendChild(li);
-                    });
-                }
+@@ -498,7 +537,7 @@ <h2 class="modal-title" id="mName">종목명</h2>
+});
+}
 
+                // 4. 백테스팅
                 // 4. 백테스팅 누적 랭킹 
-                const rankContainer = document.getElementById('rankingContainer');
-                rankContainer.innerHTML = '';
-                const c4Stats = data.c4_statistics || {};
-                
-                const dateGroups = {};
-                (data.rankings || []).forEach(item => {
-                    if(item.count < 5) return;
-                    const dateStr = item.first_date;
-                    if(!dateGroups[dateStr]) dateGroups[dateStr] = [];
-                    dateGroups[dateStr].push(item);
-                });
+const rankContainer = document.getElementById('rankingContainer');
+rankContainer.innerHTML = '';
+const c4Stats = data.c4_statistics || {};
+@@ -567,7 +606,7 @@ <h2 class="modal-title" id="mName">종목명</h2>
+});
 
-                const sortedDates = Object.keys(dateGroups).sort((a, b) => b.localeCompare(a));
-                let rankHasData = false;
-
-                sortedDates.forEach(date => {
-                    rankHasData = true;
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = 'date-group';
-                    groupDiv.innerHTML = `<div class="date-title">📅 최초 돌파일: ${date} ${date === todayStr ? '(오늘 신규)' : ''}</div>`;
-                    
-                    const gridDiv = document.createElement('div');
-                    gridDiv.className = 'horizontal-scroll';
-                    
-                    let groupStocks = dateGroups[date];
-                    groupStocks.sort((a, b) => {
-                        let statA = c4Stats[a.finale_cell] || {prob_a: 0, prob_b: 0};
-                        let statB = c4Stats[b.finale_cell] || {prob_a: 0, prob_b: 0};
-                        if (statB.prob_a !== statA.prob_a) return statB.prob_a - statA.prob_a;
-                        if (statB.prob_b !== statA.prob_b) return statB.prob_b - statA.prob_b;
-                        return b.count - a.count;
-                    });
-
-                    groupStocks.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'ranking-card';
-                        card.onclick = () => triggerModalByCode(item.code, item.name);
-                        
-                        let plusMarks = '+'.repeat(Math.min(item.count, 10)) + (item.count > 10 ? '+' : '');
-                        let historyStr = (item.history_cells || []).join(' ➔ ');
-                        let stat = c4Stats[item.finale_cell] || {prob_a: 0.0, prob_b: 0.0, total: 0};
-
-                        card.innerHTML = `
-                            <div class="rank-info" style="margin-bottom:4px;">
-                                <span class="rank-name">${item.name}</span>
-                                <span class="rank-code">${item.code}</span>
-                            </div>
-                            <div class="rank-path" style="margin-bottom:10px;">
-                                <strong style="color:#fff;">경로:</strong> ${historyStr}
-                            </div>
-                            
-                            <div style="font-size:0.8rem; color:var(--text-muted);">📍 피날레: <strong style="color:var(--accent);">[${item.finale_cell}]</strong></div>
-                            
-                            <div class="stat-row"><span>📈 최고 +20%</span><strong style="color:${getProbColor(stat.prob_a)}">${stat.prob_a}%</strong></div>
-                            <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_a}%; background:${getProbColor(stat.prob_a)}"></div></div>
-
-                            <div class="stat-row"><span>📉 종가 +20%</span><strong style="color:${getProbColor(stat.prob_b)}">${stat.prob_b}%</strong></div>
-                            <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_b}%; background:${getProbColor(stat.prob_b)}"></div></div>
-                            
-                            <div class="rank-count">${plusMarks}</div>
-                        `;
-                        gridDiv.appendChild(card);
-                    });
-                    groupDiv.appendChild(gridDiv);
-                    rankContainer.appendChild(groupDiv);
-                });
-
-                if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 카운트 5회 이상 주도주가 없습니다.</div>';
+if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 카운트 5회 이상 주도주가 없습니다.</div>';
+                renderFavorites();
                 // Firebase 데이터를 기반으로 즐겨찾기는 별도 렌더링되므로 여기서 호출 생략.
 
-            } catch (error) { console.error("데이터 로드 실패:", error); }
+} catch (error) { console.error("데이터 로드 실패:", error); }
+}
+@@ -581,11 +620,6 @@ <h2 class="modal-title" id="mName">종목명</h2>
+});
+}
+
+        function initJournal() {
+            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
+            renderJournals();
         }
 
-        function filterJournals() {
-            const keyword = document.getElementById('journalSearch').value.toLowerCase();
-            const items = document.querySelectorAll('.journal-item');
-            items.forEach(item => {
-                const text = item.innerText.toLowerCase();
-                item.style.display = text.includes(keyword) ? 'block' : 'none';
-            });
-        }
+function saveJournal() {
+const date = document.getElementById('journalDate').value;
+const title = document.getElementById('journalTitle').value.trim();
+@@ -604,34 +638,29 @@ <h2 class="modal-title" id="mName">종목명</h2>
+}
 
-        function saveJournal() {
-            const date = document.getElementById('journalDate').value;
-            const title = document.getElementById('journalTitle').value.trim();
-            const content = document.getElementById('journalContent').value.trim();
-            const fileInput = document.getElementById('journalImage');
-
-            if (!title || !content) { alert("제목과 내용을 입력하세요."); return; }
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) { _executeJournalSave(date, title, content, e.target.result); };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                _executeJournalSave(date, title, content, "");
-            }
-        }
-
-        function _executeJournalSave(date, title, content, imageData) {
+function _executeJournalSave(date, title, content, imageData) {
+            const journals = getSafeLocalData('trading_journals', []);
+            journals.unshift({ id: Date.now(), date, title, content, image: imageData });
+            setSafeLocalData('trading_journals', journals);
             cloudData.journals.unshift({ id: Date.now(), date, title, content, image: imageData });
             updateCloud();
-            document.getElementById('journalTitle').value = '';
-            document.getElementById('journalContent').value = '';
-            document.getElementById('journalImage').value = '';
-        }
+document.getElementById('journalTitle').value = '';
+document.getElementById('journalContent').value = '';
+document.getElementById('journalImage').value = '';
+            renderJournals();
+}
 
-        function deleteJournal(id) {
-            if (!confirm("일지를 삭제하시겠습니까?")) return;
+function deleteJournal(id) {
+if (!confirm("일지를 삭제하시겠습니까?")) return;
+            let journals = getSafeLocalData('trading_journals', []);
+            journals = journals.filter(j => j.id !== id);
+            setSafeLocalData('trading_journals', journals);
+            renderJournals();
             cloudData.journals = cloudData.journals.filter(j => j.id !== id);
             updateCloud();
-        }
+}
 
-        function renderJournals() {
-            const listContainer = document.getElementById('journalList');
-            listContainer.innerHTML = '';
+function renderJournals() {
+const listContainer = document.getElementById('journalList');
+listContainer.innerHTML = '';
+            const journals = getSafeLocalData('trading_journals', []);
 
+            if (journals.length === 0) {
             if (!cloudData.journals || cloudData.journals.length === 0) {
-                listContainer.innerHTML = '<li class="empty-state" style="padding:20px;">기록된 일지가 없습니다.</li>';
-                return;
-            }
+listContainer.innerHTML = '<li class="empty-state" style="padding:20px;">기록된 일지가 없습니다.</li>';
+return;
+}
 
+            journals.forEach(j => {
             cloudData.journals.forEach(j => {
-                const li = document.createElement('li');
-                li.className = 'journal-item';
-                let mediaHtml = j.image ? `<img src="${j.image}" class="journal-img">` : '';
+const li = document.createElement('li');
+li.className = 'journal-item';
+let mediaHtml = j.image ? `<img src="${j.image}" class="journal-img">` : '';
+@@ -649,7 +678,6 @@ <h2 class="modal-title" id="mName">종목명</h2>
 
-                li.innerHTML = `
-                    <div class="journal-item-header"><span>📅 ${j.date}</span><button class="journal-del-btn" onclick="deleteJournal(${j.id})">삭제</button></div>
-                    <div class="journal-item-title">${j.title}</div>
-                    <div class="journal-item-content">${j.content}</div>
-                    ${mediaHtml}
-                `;
-                listContainer.appendChild(li);
-            });
-            filterJournals();
-        }
-
-        window.onload = () => {
-            fetchMatrixData();
-        };
-    </script>
+window.onload = () => {
+fetchMatrixData();
+            initJournal();
+};
+</script>
 </body>
-</html>
