@@ -5,9 +5,8 @@ import os
 import json
 import time
 
-print("🚀 [시스템 개정] 60일 평균 거래량(VMA 60) 기반 퀀트 백테스팅 엔진 가동...")
+print("🚀 [시스템 개정] 60일 평균 거래량 기반 + 사용자 맞춤 퀀트 매수 조건 스캐너 가동...")
 
-# 1. 한국 시장 전체 보통주 라인업 로드
 df_krx = fdr.StockListing('KRX')
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
 df_krx = df_krx[df_krx['Market'] != 'KONEX']
@@ -32,8 +31,9 @@ matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
 today_captured_list = []
 ma_breakthrough_stocks = []
 new_high_stocks = []
+quant_captured_stocks = [] # [신규] 사용자 지정 퀀트 매수 조건 포착 리스트
 
-print(f"📥 [2단계] {len(target_codes)}개 종목 전수조사 및 신고가 판별 중...")
+print(f"📥 [2단계] {len(target_codes)}개 종목 전수조사 및 퀀트 조건 판별 중...")
 
 for code in target_codes:
     try:
@@ -41,11 +41,17 @@ for code in target_codes:
         df = fdr.DataReader(code_str, start=start_date, end=today_str)
         if len(df) < 61: continue 
         
+        # 기본 이평선 및 60일 거래량
         df['MA5'] = df['Close'].rolling(5).mean()
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA60'] = df['Close'].rolling(60).mean()
-        # [핵심 로직 변경] 60일 평균 거래량(VMA 60) 산출
         df['MA60_Vol'] = df['Volume'].rolling(60).mean()
+        
+        # [신규] 퀀트 매매 로직을 위한 지표 계산
+        df['MA20_Vol'] = df['Volume'].rolling(20).mean() # 20일 평균 거래량
+        df['Std20'] = df['Close'].rolling(20).std()
+        df['BB_Upper'] = df['MA20'] + (df['Std20'] * 2) # 볼린저 밴드 상단
+        df['High20'] = df['High'].rolling(20).max().shift(1) # 전일 기준 최근 20일 최고가 (주요 전고점)
         
         today_data = df.iloc[-1]
         prev_data = df.iloc[-2]
@@ -54,14 +60,28 @@ for code in target_codes:
         today_vol = today_data['Volume']
         today_vol_ma60 = today_data['MA60_Vol']
         
-        # 60일 평균 거래량이 0인 거래정지 종목 등 패스
-        if prev_close == 0 or today_vol_ma60 == 0: continue
+        if prev_close == 0 or today_vol_ma60 == 0 or pd.isna(today_data['BB_Upper']): continue
         
         change_rate = ((today_close - prev_close) / prev_close) * 100
-        # [핵심 로직 변경] X축을 전일 대비가 아닌 60일 평균 대비 거래량 비율로 수정
         vol_ratio = (today_vol / today_vol_ma60) * 100
         stock_name = name_dict.get(code_str, code_str)
 
+        # [신규] 사용자 지정 퀀트 매수 조건 (Entry Rule) 필터링
+        day_minus_5_data = df.iloc[-6]
+        
+        cond1_vol = today_vol >= today_data['MA20_Vol'] * 2 # 당일 거래량 >= 최근 20일 평균 거래량의 2배
+        cond2_bb = today_data['BB_Upper'] > day_minus_5_data['BB_Upper'] # 당일 BB 상단 > 5일 전 BB 상단
+        cond3_price = today_close > today_data['High20'] # 당일 종가 > 주요 전고점
+        
+        if change_rate > 0 and cond1_vol and cond2_bb and cond3_price:
+            quant_captured_stocks.append({
+                "code": code_str,
+                "name": stock_name,
+                "change": round(change_rate, 2),
+                "volume_ratio": round((today_vol / today_data['MA20_Vol']) * 100, 1) # 20일 평균 대비 거래량
+            })
+
+        # 기존 52주 신고가 로직
         if change_rate > 0:
             df_1yr = df.iloc[-252:] if len(df) >= 252 else df
             high_52w = df_1yr['High'].max()
@@ -83,7 +103,6 @@ for code in target_codes:
                 "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60
             })
             
-        # [핵심 로직 변경] X축 4구간 (100% / 200% / 400% 기준)
         row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
         col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < 400 else 4
         cell_id = f"R{row}C{col}"
@@ -211,7 +230,8 @@ final_web_data = {
     "ma_breakthroughs": ma_breakthrough_stocks,
     "new_highs": new_high_stocks,
     "c4_statistics": c4_statistics,
-    "recent_paths": recent_paths
+    "recent_paths": recent_paths,
+    "quant_captured": quant_captured_stocks # [신규] 퀀트 매수 조건 포착 종목 전달
 }
 
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
