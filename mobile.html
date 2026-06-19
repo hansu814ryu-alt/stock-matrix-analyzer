@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주도주 트래킹 (모바일)</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             /* 💡 라이트 모드 (White Version) 색상표 - 모바일 */
@@ -35,19 +38,10 @@
         .h2-rank { color: #059669; border-color: rgba(5, 150, 105, 0.2); }
         .h2-high { color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
         .h2-verify { color: var(--verify); border-color: rgba(124, 58, 237, 0.2); }
-        .h2-cloud { color: #0284c7; border-color: rgba(2, 132, 199, 0.2); }
+        .h2-quant { color: #ec4899; border-color: rgba(236, 72, 153, 0.2); }
 
         .search-bar { width: 100%; background: #f1f5f9; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; color: var(--text-main); margin-bottom: 16px; font-size: 15px; }
         .search-bar:focus { outline:none; border-color: var(--accent); background: #fff;}
-
-        /* 클라우드 동기화 UI */
-        .cloud-controls { display: flex; flex-direction: column; gap: 12px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed var(--border-color); }
-        .cloud-input-group { display: flex; flex-direction: column; gap: 6px; }
-        .cloud-input-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
-        .cloud-input-group input { background: #fff; color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; font-size: 15px; }
-        .cloud-btns { display: flex; gap: 10px; margin-top: 4px; }
-        .btn-cloud-up { background: #0ea5e9; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; cursor: pointer; flex: 1; }
-        .btn-cloud-down { background: #f59e0b; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; cursor: pointer; flex: 1; }
 
         .verify-controls { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom:16px;}
         .verify-select-group { display: flex; justify-content: space-between; align-items: center; }
@@ -123,8 +117,8 @@
         .modal-info-box strong { color: var(--text-main); font-weight: 800; font-family: monospace; font-size:1.05rem;}
 
         .memo-area { margin-top: 20px; margin-bottom: 20px; }
-        .memo-area textarea { width: 100%; background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: 8px; height: 80px; resize: none; margin-bottom: 10px; font-size: 15px; }
-        .memo-area button { width: 100%; background: var(--text-main); color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; font-size: 1rem; }
+        .memo-area textarea { width: 100%; background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: 8px; height: 80px; resize: none; margin-bottom: 10px; font-size: 15px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);}
+        .memo-area button { width: 100%; background: var(--text-main); color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; font-size: 1rem; box-shadow: var(--shadow-sm);}
 
         .r4-cell { border-top: 4px solid var(--r4); } .r3-cell { border-top: 4px solid var(--r3); }
         .r2-cell { border-top: 4px solid var(--r2); } .r1-cell { border-top: 4px solid var(--r1); }
@@ -134,43 +128,48 @@
 
     <header>
         <h1>주도주 트래킹 (Mobile)</h1>
-        <p>실전 패턴 검색 & 1주 퀀트 백테스트</p>
+        <p>실시간 자동 동기화(Firebase) · 1주 퀀트 백테스트</p>
     </header>
 
     <div class="section">
-        <h2 class="h2-journal">📝 매매일지 장부</h2>
+        <h2 class="h2-journal">📝 매일 매매일지 장부</h2>
         <div class="journal-form">
             <input type="date" id="journalDate">
             <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 매매)">
             <textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
             <input type="file" id="journalImage" accept="image/*">
-            <button onclick="saveJournal()">일지 로컬에 저장</button>
+            <button onclick="saveJournal()">일지 클라우드 저장</button>
         </div>
-        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 과거 일지 검색..." onkeyup="filterJournals()">
+        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 검색..." onkeyup="filterJournals()">
         <ul class="journal-list" id="journalList"></ul>
     </div>
 
     <div class="section">
-        <h2 class="h2-cloud">☁️ 기기 간 자동 동기화 (GitHub)</h2>
-        <div class="cloud-controls">
-            <div class="cloud-input-group">
-                <label>GitHub 개인 토큰 (PAT)</label>
-                <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxx" onchange="saveSyncConfig()">
-            </div>
-            <div class="cloud-input-group">
-                <label>데이터베이스 (Gist) ID</label>
-                <input type="text" id="gistId" placeholder="최초 업로드 시 자동 생성" onchange="saveSyncConfig()">
-            </div>
-            <div class="cloud-btns">
-                <button class="btn-cloud-up" onclick="uploadToCloud()">☁️ 올리기</button>
-                <button class="btn-cloud-down" onclick="downloadFromCloud()">📥 내려받기</button>
-            </div>
+        <h2 class="h2-quant">📊 퀀트 시스템 매매 로직 & 포착</h2>
+        
+        <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
+            <h3 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px;">✅ 매수 조건</h3>
+            <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 20px; line-height: 1.5; margin-bottom: 12px;">
+                <li>거래량 ≥ 최근 20일 평균 2배</li>
+                <li>당일 BB 상단 > 5일 전 BB 상단</li>
+                <li>당일 종가 > 최근 20일 최고가 돌파</li>
+            </ul>
+            <h3 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px;">🛑 매도 조건</h3>
+            <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 20px; line-height: 1.5;">
+                <li>종가 < 돌파했던 전고점</li>
+                <li>종가 < 20일 이동평균선</li>
+            </ul>
+        </div>
+        
+        <h3 style="font-size: 0.95rem; color: #ec4899; margin-bottom: 12px;">🚨 오늘 위 조건을 완벽히 충족한 종목</h3>
+        <div class="horizontal-scroll" id="quantStockList">
+            <div class="empty-state">조건을 충족한 종목이 없습니다.</div>
         </div>
     </div>
 
     <div class="section">
         <h2 class="h2-verify">🕵️ 실전 패턴 검색기</h2>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">최근 3일 궤적을 선택해 종목을 찾습니다.</p>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">최근 3일 궤적을 선택해 종목을 찾습니다.</p>
         <div class="verify-controls">
             <div class="verify-select-group">
                 <label>D-2 (2일전)</label>
@@ -197,10 +196,10 @@
     </div>
 
     <div class="section">
-        <h2 class="h2-fav">⭐ 즐겨찾기</h2>
+        <h2 class="h2-fav">⭐ 즐겨찾기 <span id="syncStatus" style="font-size:0.75rem; color:#10b981; float:right; background:#ecfdf5; padding:4px 8px; border-radius:6px;">🟢 실시간 연동 중</span></h2>
         <input type="text" id="favSearch" class="search-bar" placeholder="🔍 종목명 검색..." onkeyup="renderFavorites()">
         <div class="horizontal-scroll" id="favoriteGrid">
-            <div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
+            <div style="color:var(--text-muted); font-size:0.8rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
         </div>
     </div>
 
@@ -241,12 +240,13 @@
             <div class="modal-info-box"><span>종목 코드</span> <strong id="mCode">000000</strong></div>
             <div class="modal-info-box"><span>오늘 상승률</span> <strong id="mChange" style="color: #dc2626;">+0.0%</strong></div>
             <div class="modal-info-box"><span>60일 평균비 거래량</span> <strong id="mVolume">0.0%</strong></div>
-            <div class="modal-info-box" style="border: 1px dashed #cbd5e1; margin-top: 16px;">
+            <div class="modal-info-box" style="border: 1px dashed #cbd5e1; margin-top: 16px; background:#fff;">
                 <span>🎯 최초 돌파 날짜</span> <strong id="mFirstDate">2026-00-00</strong>
             </div>
+            <div class="modal-info-box" style="background:#fff;"><span>🎯 최초 돌파 위치</span> <strong id="mFirstCell" style="color: var(--accent);">R0C0</strong></div>
             
             <div class="memo-area">
-                <label>📌 종목 메모 (로컬 저장)</label>
+                <label>📌 종목 메모 (클라우드 저장)</label>
                 <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항 메모..."></textarea>
                 <button onclick="saveStockMemo()">메모 저장</button>
             </div>
@@ -254,162 +254,65 @@
     </div>
 
     <script>
-        function getSafeLocalData(key, defaultVal) {
-            try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : defaultVal; } 
-            catch(e) { return defaultVal; }
+        // ==========================================
+        // 🔥 Firebase 설정 (아래 정보를 본인의 키로 꼭 변경하세요!)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBM-464HJT4MWY_23aPymrskYedPckoeI",
+            authDomain: "stock-dashboard-9f73c.firebaseapp.com",
+            projectId: "stock-dashboard-9f73c",
+            storageBucket: stock-dashboard-9f73c.firebasestorage.app",
+            messagingSenderId: "227663627685",
+            appId: "1:227663627685:web:a9d13e37ecd6063aba544c"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const userDocRef = db.collection('user_data').doc('my_dashboard');
+
+        let cloudData = { journals: [], favorites: {}, memos: {} };
+
+        // 🌟 실시간 데이터 구독
+        userDocRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                cloudData.journals = data.journals || [];
+                cloudData.favorites = data.favorites || {};
+                cloudData.memos = data.memos || {};
+                
+                renderJournals();
+                renderFavorites();
+                
+                if(document.getElementById('stockModal').style.display === 'flex') {
+                    document.getElementById('mMemoInput').value = cloudData.memos[currentStockCode] || '';
+                    const btn = document.getElementById('btnFavoriteToggle');
+                    if (cloudData.favorites[currentStockCode]) {
+                        btn.innerText = '⭐'; btn.classList.add('active');
+                    } else {
+                        btn.innerText = '☆'; btn.classList.remove('active');
+                    }
+                }
+            } else {
+                userDocRef.set(cloudData);
+            }
+        });
+
+        function updateCloud() {
+            userDocRef.set(cloudData, { merge: true }).catch(err => alert("클라우드 저장 실패: " + err.message));
         }
-        function setSafeLocalData(key, val) {
-            try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
-        }
+
         function getProbColor(prob) {
             if (prob >= 50) return '#dc2626'; 
             if (prob >= 30) return '#d97706'; 
             return '#64748b'; 
         }
 
-        // ==========================================
-        // ☁️ GitHub Gist 클라우드 동기화 로직
-        // ==========================================
-        const GIST_TOKEN_KEY = 'github_sync_token';
-        const GIST_ID_KEY = 'github_gist_id';
-
-        function saveSyncConfig() {
-            const token = document.getElementById('gistToken').value.trim();
-            const gistId = document.getElementById('gistId').value.trim();
-            if(token) setSafeLocalData(GIST_TOKEN_KEY, token);
-            if(gistId) setSafeLocalData(GIST_ID_KEY, gistId);
-        }
-
-        function loadSyncConfig() {
-            document.getElementById('gistToken').value = getSafeLocalData(GIST_TOKEN_KEY, '');
-            document.getElementById('gistId').value = getSafeLocalData(GIST_ID_KEY, '');
-        }
-
-        function getSyncDataPayload() {
-            const syncData = {
-                journals: getSafeLocalData('trading_journals', []),
-                favorites: getSafeLocalData('favorite_stocks', {}),
-                memos: {}
-            };
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('memo_')) {
-                    syncData.memos[key] = localStorage.getItem(key);
-                }
-            }
-            return JSON.stringify(syncData);
-        }
-
-        async function uploadToCloud() {
-            const token = getSafeLocalData(GIST_TOKEN_KEY, '');
-            let gistId = getSafeLocalData(GIST_ID_KEY, '');
-
-            if (!token) return alert('GitHub 토큰(PAT)을 입력해주세요.');
-
-            const content = getSyncDataPayload();
-            const payload = {
-                description: "Stock Dashboard Sync Data",
-                public: false,
-                files: { "stock_dashboard_data.json": { content: content } }
-            };
-
-            try {
-                let url = 'https://api.github.com/gists';
-                let method = 'POST';
-
-                if (gistId) {
-                    url = `https://api.github.com/gists/${gistId}`;
-                    method = 'PATCH';
-                }
-
-                const response = await fetch(url, {
-                    method: method,
-                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error('업로드 실패');
-
-                const result = await response.json();
-                if (!gistId) {
-                    setSafeLocalData(GIST_ID_KEY, result.id);
-                    document.getElementById('gistId').value = result.id;
-                    alert(`✅ 최초 업로드 완료! Gist ID가 자동 발급되었습니다.\nPC에 동일한 토큰과 이 Gist ID를 넣으면 동기화가 가능합니다.`);
-                } else {
-                    alert('☁️ 데이터가 클라우드에 안전하게 덮어쓰기 백업되었습니다.');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('❌ 업로드 중 오류가 발생했습니다. 토큰이 올바른지, gist 권한이 있는지 확인해주세요.');
-            }
-        }
-
-        async function downloadFromCloud() {
-            const token = getSafeLocalData(GIST_TOKEN_KEY, '');
-            const gistId = getSafeLocalData(GIST_ID_KEY, '');
-
-            if (!token || !gistId) return alert('GitHub 토큰과 Gist ID가 모두 입력되어야 합니다.');
-
-            try {
-                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-                });
-
-                if (!response.ok) throw new Error('다운로드 실패');
-
-                const result = await response.json();
-                const file = result.files['stock_dashboard_data.json'];
-                if (!file) throw new Error('데이터 파일이 없습니다.');
-
-                const data = JSON.parse(file.content);
-
-                if (data.journals && data.journals.length > 0) {
-                    let localJournals = getSafeLocalData('trading_journals', []);
-                    let mergedJournals = [...data.journals, ...localJournals];
-                    let uniqueJournals = Array.from(new Map(mergedJournals.map(item => [item.id, item])).values());
-                    uniqueJournals.sort((a, b) => b.id - a.id);
-                    setSafeLocalData('trading_journals', uniqueJournals);
-                }
-                if (data.favorites) {
-                    let localFavs = getSafeLocalData('favorite_stocks', {});
-                    let mergedFavs = { ...localFavs, ...data.favorites };
-                    setSafeLocalData('favorite_stocks', mergedFavs);
-                }
-                if (data.memos) {
-                    for (const [key, value] of Object.entries(data.memos)) {
-                        const existingMemo = localStorage.getItem(key);
-                        if (existingMemo && existingMemo !== value) {
-                            localStorage.setItem(key, existingMemo + "\n\n[동기화 추가]:\n" + value);
-                        } else {
-                            localStorage.setItem(key, value);
-                        }
-                    }
-                }
-
-                alert("🎉 클라우드에서 데이터를 성공적으로 불러와 기존 데이터와 병합했습니다!");
-                location.reload();
-
-            } catch (error) {
-                console.error(error);
-                alert('❌ 다운로드 중 오류가 발생했습니다. Gist ID나 토큰을 확인해주세요.');
-            }
-        }
-        // ==========================================
-
         let globalCapturedData = {};
         let globalRecentPaths = {}; 
         let currentStockCode = '';
         let currentStockName = '';
-
-        const theme2Names = {
-            "R4C4": "추세 주도", "R4C3": "수급 동반 돌파", "R4C2": "매물 공백 상승", "R4C1": "저거래 급등",
-            "R3C4": "모멘텀 폭발", "R3C3": "강세 진입", "R3C2": "추세 순응", "R3C1": "데드캣 바운스",
-            "R2C4": "수급 응축", "R2C3": "저항대 소화", "R2C2": "점진적 상승", "R2C1": "기술적 보합",
-            "R1C4": "손바뀜/매집", "R1C3": "지지선 테스트", "R1C2": "박스권 횡보", "R1C1": "모멘텀 부재"
-        };
-        const rowRanges = { 4: "상승 12%↑", 3: "상승 6~12%", 2: "상승 3~6%", 1: "상승 3%↓" };
-        const colTitles = { 3: "평균비 200~400%", 4: "평균비 400% 이상" };
-        const colRanges = { 4: "거래 400%↑", 3: "거래 200~400%", 2: "거래 100~200%", 1: "거래 100%↓" };
+        
+        const rowTitles = { 4: "상승 12% 이상", 3: "상승 6% ~ 12%", 2: "상승 3% ~ 6%", 1: "상승 3% 미만" };
 
         window.addEventListener('DOMContentLoaded', () => {
             const cells = [];
@@ -422,7 +325,19 @@
                     select.appendChild(opt);
                 });
             });
+            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
         });
+
+        const gridContainer = document.getElementById('matrixGrid');
+        for (let r = 4; r >= 1; r--) {
+            for (let c = 1; c <= 4; c++) {
+                const cellId = `R${r}C${c}`;
+                const cell = document.createElement('div');
+                cell.className = `matrix-cell r${r}-cell`;
+                cell.id = cellId;
+                gridContainer.appendChild(cell);
+            }
+        }
 
         function triggerModalByCode(code, name) {
             let foundStock = null;
@@ -431,32 +346,25 @@
                 if (target) { foundStock = target; break; }
             }
             if (foundStock) openModal(foundStock);
-            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-" });
+            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-", first_cell: "-" });
         }
 
         function toggleFavorite() {
-            let favs = getSafeLocalData('favorite_stocks', {});
-            const btn = document.getElementById('btnFavoriteToggle');
-
-            if (favs[currentStockCode]) {
-                delete favs[currentStockCode];
-                btn.innerText = '☆'; btn.classList.remove('active');
+            if (cloudData.favorites[currentStockCode]) {
+                delete cloudData.favorites[currentStockCode];
             } else {
-                favs[currentStockCode] = currentStockName;
-                btn.innerText = '⭐'; btn.classList.add('active');
+                cloudData.favorites[currentStockCode] = currentStockName;
             }
-            setSafeLocalData('favorite_stocks', favs);
-            renderFavorites();
+            updateCloud(); 
         }
 
         function renderFavorites() {
             const container = document.getElementById('favoriteGrid');
             container.innerHTML = '';
-            const favs = getSafeLocalData('favorite_stocks', {});
             const keyword = document.getElementById('favSearch').value.toLowerCase();
 
             let hasItem = false;
-            for (const [code, name] of Object.entries(favs)) {
+            for (const [code, name] of Object.entries(cloudData.favorites)) {
                 if(keyword && !name.toLowerCase().includes(keyword) && !code.includes(keyword)) continue;
                 hasItem = true;
                 const card = document.createElement('div');
@@ -488,7 +396,7 @@
             container.innerHTML = '';
             
             if(!d1 && !d2 && !d3) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">조건을 선택해주세요.</div>';
+                container.innerHTML = '<div class="empty-state" style="width:100%;">최소 1개 이상의 날짜 조건을 선택해주세요.</div>';
                 return;
             }
             
@@ -510,7 +418,7 @@
             }
             
             if (results.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">일치하는 종목이 없습니다.</div>';
+                container.innerHTML = '<div class="empty-state" style="width:100%;">선택한 패턴과 일치하는 종목이 없습니다.</div>';
                 return;
             }
             
@@ -542,12 +450,12 @@
             document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
             document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
             document.getElementById('mFirstDate').innerText = stock.first_date;
+            document.getElementById('mFirstCell').innerText = stock.first_cell;
             
-            document.getElementById('mMemoInput').value = getSafeLocalData(`memo_${stock.code}`, '');
+            document.getElementById('mMemoInput').value = cloudData.memos[stock.code] || '';
             
-            let favs = getSafeLocalData('favorite_stocks', {});
             const btn = document.getElementById('btnFavoriteToggle');
-            if (favs[stock.code]) {
+            if (cloudData.favorites[stock.code]) {
                 btn.innerText = '⭐'; btn.classList.add('active');
             } else {
                 btn.innerText = '☆'; btn.classList.remove('active');
@@ -563,8 +471,9 @@
         function closeModal() { document.getElementById('stockModal').style.display = 'none'; }
         
         function saveStockMemo() {
-            setSafeLocalData(`memo_${currentStockCode}`, document.getElementById('mMemoInput').value);
-            alert("메모가 저장되었습니다.");
+            cloudData.memos[currentStockCode] = document.getElementById('mMemoInput').value;
+            updateCloud();
+            alert("메모가 클라우드에 저장되었습니다.");
         }
 
         async function fetchMatrixData() {
@@ -580,7 +489,7 @@
                     if (data.captured[cell].length > maxCount) maxCount = data.captured[cell].length;
                 }
 
-                // 1. 모바일 매트릭스 6칸 (화이트 히트맵)
+                // [1] 매트릭스 렌더링 
                 const gridContainer = document.getElementById('matrixGrid');
                 gridContainer.innerHTML = '';
                 let hasData = false;
@@ -620,7 +529,28 @@
                 }
                 if(!hasData) gridContainer.innerHTML = '<div class="empty-state">조건에 포착된 종목이 없습니다.</div>';
 
-                // 2. 신고가 (가로 스크롤)
+                // [1.5 신규] 퀀트 매수 조건 포착 종목 렌더링
+                const quantList = data.quant_captured || [];
+                const quantContainer = document.getElementById('quantStockList');
+                quantContainer.innerHTML = '';
+                if (quantList.length === 0) {
+                    quantContainer.innerHTML = '<div class="empty-state" style="width:100%;">조건을 충족한 종목이 없습니다.</div>';
+                } else {
+                    quantList.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'ranking-card';
+                        card.style.flex = '0 0 250px';
+                        card.onclick = () => triggerModalByCode(item.code, item.name);
+                        card.innerHTML = `
+                            <div class="rank-info"><span class="rank-name">${item.name}</span><span class="rank-code">${item.code}</span></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">오늘 상승률</span><strong style="color:var(--r4);">+${item.change}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">20일 평균비 거래량</span><strong style="color:var(--accent);">${item.volume_ratio}%</strong></div>
+                        `;
+                        quantContainer.appendChild(card);
+                    });
+                }
+
+                // [2] 신고가 (가로 스크롤)
                 const highContainer = document.getElementById('newHighGrid');
                 highContainer.innerHTML = '';
                 const highList = data.new_highs || [];
@@ -638,7 +568,7 @@
                     });
                 }
 
-                // 3. 이평선 
+                // [3] 이평선 
                 const maContainer = document.getElementById('maList');
                 maContainer.innerHTML = '';
                 
@@ -669,7 +599,7 @@
                     });
                 }
 
-                // 4. 백테스팅 누적 랭킹 
+                // [4] 백테스팅 누적 랭킹
                 const rankContainer = document.getElementById('rankingContainer');
                 rankContainer.innerHTML = '';
                 const c4Stats = data.c4_statistics || {};
@@ -717,16 +647,16 @@
                                 <span class="rank-name">${item.name}</span>
                                 <span class="rank-code">${item.code}</span>
                             </div>
-                            <div class="rank-path" style="margin-bottom:12px;">
+                            <div class="rank-path" style="margin-bottom:10px;">
                                 <strong style="color:var(--text-main);">경로:</strong> ${historyStr}
                             </div>
                             
-                            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">📍 피날레: <strong style="color:var(--accent);">[${item.finale_cell}]</strong></div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">📍 피날레: <strong style="color:var(--accent);">[${item.finale_cell}]</strong></div>
                             
-                            <div class="stat-row"><span>📈 최고 +20%</span><strong style="color:${getProbColor(stat.prob_a)}">${stat.prob_a}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">📈 최고 +20%</span><strong style="color:${getProbColor(stat.prob_a)}">${stat.prob_a}%</strong></div>
                             <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_a}%; background:${getProbColor(stat.prob_a)}"></div></div>
 
-                            <div class="stat-row"><span>📉 종가 +20%</span><strong style="color:${getProbColor(stat.prob_b)}">${stat.prob_b}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">📉 종가 +20%</span><strong style="color:${getProbColor(stat.prob_b)}">${stat.prob_b}%</strong></div>
                             <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_b}%; background:${getProbColor(stat.prob_b)}"></div></div>
                             
                             <div class="rank-count">${plusMarks}</div>
@@ -738,7 +668,7 @@
                 });
 
                 if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 카운트 5회 이상 주도주가 없습니다.</div>';
-                renderFavorites();
+                // Firebase 데이터를 기반으로 즐겨찾기는 별도 렌더링되므로 여기서 호출 생략.
 
             } catch (error) { console.error("데이터 로드 실패:", error); }
         }
@@ -752,11 +682,6 @@
             });
         }
 
-        function initJournal() {
-            document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
-            renderJournals();
-        }
-
         function saveJournal() {
             const date = document.getElementById('journalDate').value;
             const title = document.getElementById('journalTitle').value.trim();
@@ -767,42 +692,41 @@
 
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) { _executeJournalSave(date, title, content, e.target.result); };
+                reader.onload = function(e) {
+                    cloudData.journals.unshift({ id: Date.now(), date, title, content, image: e.target.result });
+                    updateCloud();
+                    clearJournalForm();
+                };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                _executeJournalSave(date, title, content, "");
+                cloudData.journals.unshift({ id: Date.now(), date, title, content, image: "" });
+                updateCloud();
+                clearJournalForm();
             }
         }
 
-        function _executeJournalSave(date, title, content, imageData) {
-            const journals = getSafeLocalData('trading_journals', []);
-            journals.unshift({ id: Date.now(), date, title, content, image: imageData });
-            setSafeLocalData('trading_journals', journals);
+        function clearJournalForm() {
             document.getElementById('journalTitle').value = '';
             document.getElementById('journalContent').value = '';
             document.getElementById('journalImage').value = '';
-            renderJournals();
         }
 
         function deleteJournal(id) {
             if (!confirm("일지를 삭제하시겠습니까?")) return;
-            let journals = getSafeLocalData('trading_journals', []);
-            journals = journals.filter(j => j.id !== id);
-            setSafeLocalData('trading_journals', journals);
-            renderJournals();
+            cloudData.journals = cloudData.journals.filter(j => j.id !== id);
+            updateCloud();
         }
 
         function renderJournals() {
             const listContainer = document.getElementById('journalList');
             listContainer.innerHTML = '';
-            const journals = getSafeLocalData('trading_journals', []);
 
-            if (journals.length === 0) {
+            if (!cloudData.journals || cloudData.journals.length === 0) {
                 listContainer.innerHTML = '<li class="empty-state" style="padding:20px;">기록된 일지가 없습니다.</li>';
                 return;
             }
 
-            journals.forEach(j => {
+            cloudData.journals.forEach(j => {
                 const li = document.createElement('li');
                 li.className = 'journal-item';
                 let mediaHtml = j.image ? `<img src="${j.image}" class="journal-img">` : '';
@@ -819,9 +743,7 @@
         }
 
         window.onload = () => {
-            loadSyncConfig();
             fetchMatrixData();
-            initJournal();
         };
     </script>
 </body>
