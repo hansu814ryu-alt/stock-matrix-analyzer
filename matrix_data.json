@@ -2427,6 +2427,49 @@
     },
     "rankings": [
         {
+            "code": "198440",
+            "name": "강동씨앤엘",
+            "count": 13,
+            "first_date": "2026-06-02",
+            "history_cells": [
+                "R2C4",
+                "R2C4",
+                "R2C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
+            "code": "011080",
+            "name": "형지I&C",
+            "count": 12,
+            "first_date": "2026-06-02",
+            "history_cells": [
+                "R4C4",
+                "R3C4",
+                "R2C4",
+                "R2C4",
+                "R3C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
             "code": "037560",
             "name": "LG헬로비전",
             "count": 12,
@@ -2448,52 +2491,11 @@
             "finale_cell": "R2C4"
         },
         {
-            "code": "198440",
-            "name": "강동씨앤엘",
+            "code": "085620",
+            "name": "미래에셋생명",
             "count": 12,
             "first_date": "2026-06-02",
             "history_cells": [
-                "R2C4",
-                "R2C4",
-                "R2C4",
-                "R3C4",
-                "R3C4",
-                "R3C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R3C4"
-        },
-        {
-            "code": "011080",
-            "name": "형지I&C",
-            "count": 11,
-            "first_date": "2026-06-02",
-            "history_cells": [
-                "R4C4",
-                "R3C4",
-                "R2C4",
-                "R2C4",
-                "R3C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R3C4"
-        },
-        {
-            "code": "085620",
-            "name": "미래에셋생명",
-            "count": 11,
-            "first_date": "2026-06-02",
-            "history_cells": [
                 "R4C4",
                 "R4C4",
                 "R4C4",
@@ -2502,6 +2504,7 @@
                 "R3C4",
                 "R4C4",
                 "R2C4",
+                "R3C4",
                 "R3C4",
                 "R3C4",
                 "R3C4"
@@ -2511,7 +2514,7 @@
         {
             "code": "014950",
             "name": "삼익제약",
-            "count": 10,
+            "count": 11,
             "first_date": "2026-06-12",
             "history_cells": [
                 "R2C4",
@@ -2523,6 +2526,7 @@
                 "R4C4",
                 "R4C4",
                 "R4C4",
+                "R4C4",
                 "R4C4"
             ],
             "finale_cell": "R4C4"
@@ -2530,7 +2534,7 @@
         {
             "code": "149950",
             "name": "아바텍",
-            "count": 10,
+            "count": 11,
             "first_date": "2026-05-28",
             "history_cells": [
                 "R3C4",
@@ -2542,6 +2546,7 @@
                 "R2C4",
                 "R3C4",
                 "R3C4",
+                "R3C4",
                 "R3C4"
             ],
             "finale_cell": "R3C4"
@@ -2549,13 +2554,32 @@
         {
             "code": "067290",
             "name": "JW신약",
-            "count": 9,
+            "count": 10,
             "first_date": "2026-06-15",
             "history_cells": [
                 "R4C4",
                 "R4C4",
                 "R4C4",
                 "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
+            "code": "058730",
+            "name": "다스코",
+            "count": 9,
+            "first_date": "2026-06-10",
+            "history_cells": [
+                "R3C4",
+                "R2C4",
+                "R2C4",
+                "R2C4",
                 "R4C4",
                 "R4C4",
                 "R4C4",
@@ -2583,6 +2607,23 @@
             "finale_cell": "R3C4"
         },
         {
+            "code": "000890",
+            "name": "보해양조",
+            "count": 8,
+            "first_date": "2026-06-15",
+            "history_cells": [
+                "R2C4",
+                "R2C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
             "code": "008700",
             "name": "아남전자",
             "count": 8,
@@ -2600,6 +2641,23 @@
             "finale_cell": "R4C4"
         },
         {
+            "code": "009620",
+            "name": "삼보산업",
+            "count": 8,
+            "first_date": "2026-06-09",
+            "history_cells": [
+                "R2C4",
+                "R2C4",
+                "R2C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
             "code": "012170",
             "name": "아센디오",
             "count": 8,
@@ -2615,23 +2673,6 @@
                 "R3C4"
             ],
             "finale_cell": "R3C4"
-        },
-        {
-            "code": "058730",
-            "name": "다스코",
-            "count": 8,
-            "first_date": "2026-06-10",
-            "history_cells": [
-                "R3C4",
-                "R2C4",
-                "R2C4",
-                "R2C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R4C4"
         },
         {
             "code": "090360",
@@ -2668,6 +2709,40 @@
             "finale_cell": "R3C4"
         },
         {
+            "code": "311320",
+            "name": "지오엘리먼트",
+            "count": 8,
+            "first_date": "2026-06-15",
+            "history_cells": [
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
+            "code": "330350",
+            "name": "위더스제약",
+            "count": 8,
+            "first_date": "2026-06-15",
+            "history_cells": [
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R3C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
             "code": "457370",
             "name": "한켐",
             "count": 8,
@@ -2685,6 +2760,23 @@
             "finale_cell": "R4C4"
         },
         {
+            "code": "462870",
+            "name": "시프트업",
+            "count": 8,
+            "first_date": "2026-06-09",
+            "history_cells": [
+                "R3C4",
+                "R2C4",
+                "R2C4",
+                "R4C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
             "code": "462980",
             "name": "아이지넷",
             "count": 8,
@@ -2700,38 +2792,6 @@
                 "R3C4"
             ],
             "finale_cell": "R4C4"
-        },
-        {
-            "code": "000890",
-            "name": "보해양조",
-            "count": 7,
-            "first_date": "2026-06-15",
-            "history_cells": [
-                "R2C4",
-                "R2C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R4C4"
-        },
-        {
-            "code": "009620",
-            "name": "삼보산업",
-            "count": 7,
-            "first_date": "2026-06-09",
-            "history_cells": [
-                "R2C4",
-                "R2C4",
-                "R2C4",
-                "R3C4",
-                "R3C4",
-                "R3C4",
-                "R3C4"
-            ],
-            "finale_cell": "R3C4"
         },
         {
             "code": "045390",
@@ -2766,6 +2826,38 @@
             "finale_cell": "R4C4"
         },
         {
+            "code": "048550",
+            "name": "SM C&C",
+            "count": 7,
+            "first_date": "2026-06-11",
+            "history_cells": [
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
+            "code": "091590",
+            "name": "남화토건",
+            "count": 7,
+            "first_date": "2026-06-11",
+            "history_cells": [
+                "R2C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
             "code": "204320",
             "name": "HL만도",
             "count": 7,
@@ -2782,38 +2874,6 @@
             "finale_cell": "R3C4"
         },
         {
-            "code": "311320",
-            "name": "지오엘리먼트",
-            "count": 7,
-            "first_date": "2026-06-15",
-            "history_cells": [
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R4C4"
-        },
-        {
-            "code": "330350",
-            "name": "위더스제약",
-            "count": 7,
-            "first_date": "2026-06-15",
-            "history_cells": [
-                "R4C4",
-                "R4C4",
-                "R4C4",
-                "R3C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R4C4"
-        },
-        {
             "code": "377220",
             "name": "프롬바이오",
             "count": 7,
@@ -2826,22 +2886,6 @@
                 "R3C4",
                 "R2C4",
                 "R2C4"
-            ],
-            "finale_cell": "R3C4"
-        },
-        {
-            "code": "462870",
-            "name": "시프트업",
-            "count": 7,
-            "first_date": "2026-06-09",
-            "history_cells": [
-                "R3C4",
-                "R2C4",
-                "R2C4",
-                "R4C4",
-                "R3C4",
-                "R3C4",
-                "R3C4"
             ],
             "finale_cell": "R3C4"
         },
@@ -2906,21 +2950,6 @@
             "finale_cell": "R3C4"
         },
         {
-            "code": "048550",
-            "name": "SM C&C",
-            "count": 6,
-            "first_date": "2026-06-11",
-            "history_cells": [
-                "R3C4",
-                "R3C4",
-                "R3C4",
-                "R3C4",
-                "R3C4",
-                "R3C4"
-            ],
-            "finale_cell": "R3C4"
-        },
-        {
             "code": "066430",
             "name": "아이로보틱스",
             "count": 6,
@@ -2936,6 +2965,21 @@
             "finale_cell": "R4C4"
         },
         {
+            "code": "079000",
+            "name": "와토스코리아",
+            "count": 6,
+            "first_date": "2026-06-18",
+            "history_cells": [
+                "R3C4",
+                "R4C4",
+                "R2C4",
+                "R2C4",
+                "R2C4",
+                "R2C4"
+            ],
+            "finale_cell": "R2C4"
+        },
+        {
             "code": "083660",
             "name": "CSA 코스믹",
             "count": 6,
@@ -2945,21 +2989,6 @@
                 "R2C4",
                 "R2C4",
                 "R2C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R4C4"
-        },
-        {
-            "code": "091590",
-            "name": "남화토건",
-            "count": 6,
-            "first_date": "2026-06-11",
-            "history_cells": [
-                "R2C4",
-                "R4C4",
-                "R4C4",
-                "R4C4",
                 "R4C4",
                 "R4C4"
             ],
@@ -3071,6 +3100,21 @@
             "finale_cell": "R2C4"
         },
         {
+            "code": "460940",
+            "name": "피앤에스로보틱스",
+            "count": 6,
+            "first_date": "2026-06-12",
+            "history_cells": [
+                "R3C4",
+                "R3C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
             "code": "002960",
             "name": "한국쉘석유",
             "count": 5,
@@ -3111,6 +3155,20 @@
                 "R2C4"
             ],
             "finale_cell": "R2C4"
+        },
+        {
+            "code": "010690",
+            "name": "화신",
+            "count": 5,
+            "first_date": "2026-06-19",
+            "history_cells": [
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
         },
         {
             "code": "013360",
@@ -3211,20 +3269,6 @@
             "finale_cell": "R3C4"
         },
         {
-            "code": "079000",
-            "name": "와토스코리아",
-            "count": 5,
-            "first_date": "2026-06-18",
-            "history_cells": [
-                "R3C4",
-                "R4C4",
-                "R2C4",
-                "R2C4",
-                "R2C4"
-            ],
-            "finale_cell": "R2C4"
-        },
-        {
             "code": "079650",
             "name": "서산",
             "count": 5,
@@ -3246,6 +3290,20 @@
             "history_cells": [
                 "R2C4",
                 "R2C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
+            "code": "092040",
+            "name": "아미코젠",
+            "count": 5,
+            "first_date": "2026-06-19",
+            "history_cells": [
+                "R4C4",
+                "R4C4",
                 "R4C4",
                 "R4C4",
                 "R4C4"
@@ -3379,6 +3437,34 @@
             "finale_cell": "R4C4"
         },
         {
+            "code": "276730",
+            "name": "한울앤제주",
+            "count": 5,
+            "first_date": "2026-06-04",
+            "history_cells": [
+                "R3C4",
+                "R4C4",
+                "R4C4",
+                "R4C4",
+                "R4C4"
+            ],
+            "finale_cell": "R4C4"
+        },
+        {
+            "code": "308100",
+            "name": "형지글로벌",
+            "count": 5,
+            "first_date": "2026-06-19",
+            "history_cells": [
+                "R4C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
             "code": "314140",
             "name": "알피바이오",
             "count": 5,
@@ -3505,6 +3591,20 @@
             "finale_cell": "R3C4"
         },
         {
+            "code": "446840",
+            "name": "지슨",
+            "count": 5,
+            "first_date": "2026-06-19",
+            "history_cells": [
+                "R2C4",
+                "R3C4",
+                "R3C4",
+                "R3C4",
+                "R3C4"
+            ],
+            "finale_cell": "R3C4"
+        },
+        {
             "code": "455180",
             "name": "케이지에이",
             "count": 5,
@@ -3517,20 +3617,6 @@
                 "R2C4"
             ],
             "finale_cell": "R2C4"
-        },
-        {
-            "code": "460940",
-            "name": "피앤에스로보틱스",
-            "count": 5,
-            "first_date": "2026-06-12",
-            "history_cells": [
-                "R3C4",
-                "R3C4",
-                "R4C4",
-                "R4C4",
-                "R4C4"
-            ],
-            "finale_cell": "R4C4"
         },
         {
             "code": "475150",
