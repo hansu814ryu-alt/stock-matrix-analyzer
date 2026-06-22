@@ -156,8 +156,8 @@
             </ul>
             <h3 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px;">🛑 매도 조건</h3>
             <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 20px; line-height: 1.5;">
-                <li>종가 < 돌파했던 전고점</li>
-                <li>종가 < 20일 이동평균선</li>
+                <li>종가 &lt; 돌파했던 전고점</li>
+                <li>종가 &lt; 20일 이동평균선</li>
             </ul>
         </div>
         
@@ -255,13 +255,13 @@
 
     <script>
         // ==========================================
-        // 🔥 Firebase 설정 (아래 정보를 본인의 키로 꼭 변경하세요!)
+        // 🔥 Firebase 설정 (사용자의 실제 설정값 복구)
         // ==========================================
-       const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyDBM-464HJT4MWY_23aPymrskYedPckoeI",
             authDomain: "stock-dashboard-9f73c.firebaseapp.com",
             projectId: "stock-dashboard-9f73c",
-            storageBucket: "stock-dashboard-9f73c.firebasestorage.app", /* 👈 정상 수정됨 */
+            storageBucket: "stock-dashboard-9f73c.firebasestorage.app", // 큰따옴표 수정됨
             messagingSenderId: "227663627685",
             appId: "1:227663627685:web:a9d13e37ecd6063aba544c"
         };
@@ -509,8 +509,7 @@
                             
                             cell.innerHTML = `
                                 <div class="cell-header" style="color: var(--r${r});">
-                                    <span class="cell-title">${cellId} [${theme2Names[cellId]}]</span>
-                                    <span class="cell-subtitle">📈 ${rowRanges[r]} | 📊 ${colRanges[c]}</span>
+                                    <span class="cell-title">${cellId}</span>
                                 </div>
                                 <ul class="stock-list" id="mlist-${cellId}"></ul>
                             `;
