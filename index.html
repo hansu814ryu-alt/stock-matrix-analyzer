@@ -2,230 +2,278 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주도주 트래킹 (모바일)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주도주 트래킹 하이브리드 대시보드</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-    
+
+    <script>
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "mobile.html"; 
+        }
+    </script>
     <style>
         :root {
-            /* 💡 라이트 모드 (White Version) 색상표 - 모바일 */
-            --bg-color: #f8fafc; 
-            --card-bg: #ffffff; 
-            --text-main: #1e293b; 
-            --text-muted: #64748b;
-            --border-color: #e2e8f0; 
-            --accent: #0284c7; 
-            --favorite: #d97706;
-            --verify: #7c3aed;
-            --r4: #dc2626; --r3: #ea580c; --r2: #d97706; --r1: #059669;
+            --bg-color: #f1f5f9;         
+            --card-bg: #ffffff;          
+            --text-main: #334155;        
+            --text-muted: #64748b;       
+            --border-color: #e2e8f0;     
             
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --accent: #0284c7;           
+            --favorite: #d97706;         
+            --verify: #7c3aed;           
+            
+            --r4: #dc2626; 
+            --r3: #ea580c; 
+            --r2: #d97706; 
+            --r1: #059669; 
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
         }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 16px 12px; line-height: 1.6; font-size: 14px; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 30px 40px; line-height: 1.6; }
         
-        header { margin-bottom: 24px; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
-        header h1 { font-size: 1.6rem; color: var(--accent); margin-bottom: 6px; font-weight: 800;}
-        header p { color: var(--text-muted); font-size: 0.85rem; font-weight: 600;}
+        header { margin-bottom: 35px; text-align: center; border-bottom: 2px solid var(--border-color); padding-bottom: 20px; }
+        header h1 { font-size: 2rem; color: var(--accent); margin-bottom: 8px; font-weight: 800;}
+        header p { color: var(--text-muted); font-size: 0.95rem; font-weight: 500;}
 
-        .section { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);}
-        .section h2 { font-size: 1.15rem; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); font-weight: 800;}
-        .h2-matrix { color: var(--accent); border-color: rgba(2, 132, 199, 0.2); }
-        .h2-ma { color: #e11d48; border-color: rgba(225, 29, 72, 0.2); }
-        .h2-fav { color: var(--favorite); border-color: rgba(217, 119, 6, 0.2); }
-        .h2-rank { color: #059669; border-color: rgba(5, 150, 105, 0.2); }
-        .h2-high { color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
-        .h2-verify { color: var(--verify); border-color: rgba(124, 58, 237, 0.2); }
-        .h2-quant { color: #ec4899; border-color: rgba(236, 72, 153, 0.2); }
+        .section-box, .ma-board { 
+            background-color: var(--card-bg); 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 24px; 
+            margin-bottom: 24px; 
+            box-shadow: var(--shadow-sm);
+        }
+        .section-box h2, .ma-board h2 { font-size: 1.25rem; margin-bottom: 16px; padding-bottom: 8px; font-weight: 700; }
+        .h2-journal { color: #059669; border-bottom: 2px solid rgba(5, 150, 105, 0.2); }
+        .h2-quant { color: #ec4899; border-bottom: 2px solid rgba(236, 72, 153, 0.2); } 
+        .h2-verify { color: var(--verify); border-bottom: 2px solid rgba(124, 58, 237, 0.2); } 
+        .h2-high { color: var(--favorite); border-bottom: 2px solid rgba(217, 119, 6, 0.2); }
+        .h2-fav { color: var(--favorite); border-bottom: 2px solid rgba(217, 119, 6, 0.2); }
+        .h2-rank { color: var(--accent); border-bottom: 2px solid rgba(2, 132, 199, 0.2); }
 
-        .search-bar { width: 100%; background: #f1f5f9; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; color: var(--text-main); margin-bottom: 16px; font-size: 15px; }
-        .search-bar:focus { outline:none; border-color: var(--accent); background: #fff;}
+        .search-bar { width: 100%; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; color: var(--text-main); margin-bottom: 20px; font-size: 0.95rem; transition: 0.2s;}
+        .search-bar:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); background: #fff;}
 
-        .verify-controls { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom:16px;}
-        .verify-select-group { display: flex; justify-content: space-between; align-items: center; }
-        .verify-select-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; width: 80px;}
-        .verify-select-group select { flex: 1; background: #fff; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-size: 0.95rem; }
-        .btn-verify { background: var(--verify); color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; cursor: pointer; margin-top: 6px; }
-
-        .matrix-mobile-container { display: flex; flex-direction: column; gap: 12px; }
-        .matrix-cell { border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; transition: background 0.3s; background: #fff;}
-        .cell-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 4px; }
-        .cell-title { font-size: 1.1rem; font-weight: 800; }
-        .cell-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
-        .empty-state { display: flex; justify-content: center; align-items: center; font-size: 0.85rem; color: var(--text-muted); background: #f8fafc; border-radius: 8px; padding: 16px; font-weight: 500;}
+        .journal-container { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+        .journal-form { display: flex; flex-direction: column; gap: 12px; }
+        .journal-form input, .journal-form textarea { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 0.95rem; }
+        .journal-form textarea { resize: none; height: 100px; }
+        .journal-form button { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem;}
+        .journal-form button:hover { background: #059669; transform: translateY(-1px); box-shadow: var(--shadow-md);}
         
-        .stock-list, .ma-list, .journal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .stock-item { font-size: 0.95rem; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight:600;}
-        .stock-item:active { background: #f1f5f9; border-color: var(--accent);}
+        .journal-list { list-style: none; overflow-y: auto; max-height: 400px; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;}
+        .journal-list::-webkit-scrollbar { width: 6px; }
+        .journal-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .journal-item { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; position: relative; }
+        .journal-item-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
+        .journal-item-title { font-weight: 800; color: var(--text-main); margin-bottom: 6px; font-size: 1.05rem; }
+        .journal-item-content { font-size: 0.9rem; color: #475569; white-space: pre-line; margin-bottom: 10px; }
+        .journal-del-btn { position: absolute; top: 12px; right: 16px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.85rem; font-weight: bold;}
+        .journal-img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border-color); display: block; margin-top:10px; }
+
+        .verify-controls { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed var(--border-color); flex-wrap: wrap; }
+        .verify-select-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px; }
+        .verify-select-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
+        .verify-select-group select { background: #fff; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-size: 0.95rem; }
+        .btn-verify { background: var(--verify); color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-weight: bold; cursor: pointer; transition: 0.2s; align-self: flex-end; }
+        .btn-verify:hover { background: #6d28d9; }
+
+        .main-container { display: grid; grid-template-columns: 3fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .matrix-wrapper { display: flex; flex-direction: column; }
+        .grid-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; text-align: center; font-size: 0.9rem; color: var(--text-muted); font-weight: 700; }
+        .matrix-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; flex-grow: 1; }
+        
+        .matrix-cell { border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; min-height: 160px; display: flex; flex-direction: column; transition: 0.2s; background-color: #fff;}
+        .matrix-cell:hover { box-shadow: var(--shadow-md); transform: translateY(-2px);}
+        .cell-header { font-size: 0.85rem; font-weight: 800; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+        .empty-state { flex-grow: 1; display: flex; justify-content: center; align-items: center; font-size: 0.9rem; color: #94a3b8; font-weight:500;}
+
+        .stock-list { list-style: none; overflow-y: auto; max-height: 150px; padding-right:4px;}
+        .stock-list::-webkit-scrollbar { width: 4px; }
+        .stock-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        
+        .stock-item { font-size: 0.9rem; padding: 10px 12px; margin-bottom: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; font-weight: 500;}
+        .stock-item:hover { border-left: 4px solid var(--accent); background: #f1f5f9; transform: translateX(2px); }
         .stock-change { font-weight: 800; }
 
-        .ma-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-        .badge { font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; font-weight: bold; color: #fff; }
+        .ma-list { list-style: none; overflow-y: auto; max-height: 580px; display: flex; flex-direction: column; gap: 6px;}
+        .ma-badges { display: flex; gap: 4px; margin-top: 6px;}
+        .badge { font-size: 0.75rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; color: #fff; }
         .bg-ma5 { background-color: #3b82f6; } .bg-ma20 { background-color: #eab308; } .bg-ma60 { background-color: #a855f7; }
         .bg-ath { background-color: #ef4444; } .bg-52w { background-color: #f59e0b; }
 
-        /* 가로 스와이프 UI (Mobile) - 화이트 모드 */
-        .horizontal-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 12px; scroll-snap-type: x mandatory; margin: 0 -8px; padding: 0 8px 12px 8px; }
-        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .horizontal-scroll { display: flex; overflow-x: auto; gap: 16px; padding-bottom: 16px; }
+        .horizontal-scroll::-webkit-scrollbar { height: 8px; }
+        .horizontal-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         
-        .ranking-container { display: flex; flex-direction: column; gap: 16px; }
-        .date-title { font-size: 0.95rem; color: #059669; margin-bottom: 10px; font-weight: 800; background: #ecfdf5; padding: 6px 12px; border-radius: 6px; display: inline-block;}
-        .ranking-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .ranking-card { flex: 0 0 300px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-sm);}
+        .ranking-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); transform: translateY(-4px);}
         
-        .ranking-card { flex: 0 0 85vw; scroll-snap-align: center; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; box-shadow: var(--shadow-sm);}
         .rank-info { display: flex; justify-content: space-between; align-items: center; }
-        .rank-name { font-size: 1.05rem; font-weight: 800; color: var(--text-main);}
-        .rank-code { font-size: 0.8rem; color: var(--text-muted); background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600;}
-        .rank-path { font-size: 0.85rem; color: #475569; line-height: 1.4; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;}
-
-        .stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-top: 8px; color: var(--text-main);}
-        .progress-bg { width: 100%; background: #e2e8f0; border-radius: 4px; height: 8px; margin-top: 4px; overflow: hidden; }
+        .rank-name { font-size: 1.1rem; font-weight: 800; color: var(--text-main);}
+        .rank-code { font-size: 0.85rem; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px;}
+        .rank-path { font-size: 0.85rem; color: #475569; line-height: 1.4; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px dashed #cbd5e1;}
+        
+        .stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-top: 6px; }
+        .progress-bg { width: 100%; background: #e2e8f0; border-radius: 4px; height: 8px; margin-top: 2px; overflow: hidden; }
         .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; }
-        .rank-count { font-size: 1.25rem; color: #dc2626; font-weight: 900; letter-spacing: 1px; text-align: right; margin-top: 8px;}
+        .rank-count { font-size: 1.2rem; color: #dc2626; font-weight: 900; letter-spacing: 1px; text-align: right; }
 
-        .journal-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-        .journal-form input, .journal-form textarea { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 15px; }
-        .journal-form textarea { resize: none; height: 90px; }
-        .journal-form button { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: var(--shadow-sm);}
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 20px 0; }
+        .modal-content { background: #fff; border: none; border-radius: 16px; padding: 30px; width: 550px; text-align: center; position: relative; margin: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-close { position: absolute; top: 15px; right: 20px; cursor: pointer; color: var(--text-muted); font-size: 1.5rem; transition: 0.2s;}
+        .modal-close:hover { color: #ef4444; }
         
-        .journal-item { background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; position: relative; box-shadow: var(--shadow-sm);}
-        .journal-item-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
-        .journal-item-title { font-weight: 800; color: var(--text-main); font-size: 1.05rem; margin-bottom: 6px; }
-        .journal-item-content { font-size: 0.9rem; color: #475569; white-space: pre-line; margin-bottom: 10px; }
-        .journal-img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color); display: block; margin-top: 10px; }
-        .journal-del-btn { background: none; border: none; color: #ef4444; font-size: 0.85rem; font-weight: bold; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px); z-index: 1000; overflow-y: auto; padding: 20px 15px; flex-direction: column; }
-        .modal-content { background: #fff; border-radius: 16px; padding: 25px 20px; box-shadow: var(--shadow-lg);}
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-title-wrapper { display: flex; align-items: center; gap: 10px; }
-        .modal-title { font-size: 1.4rem; color: var(--text-main); font-weight: 800; }
-        .btn-favorite-toggle { font-size: 1.6rem; color: #cbd5e1; padding: 5px; }
+        .modal-title-wrapper { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .modal-title { font-size: 1.4rem; color: var(--text-main); font-weight: 800; margin: 0; }
+        .btn-favorite-toggle { font-size: 1.6rem; cursor: pointer; color: #cbd5e1; user-select: none; transition: 0.2s; }
         .btn-favorite-toggle.active { color: var(--favorite); }
-        .modal-close { font-size: 2rem; color: var(--text-muted); line-height: 1; padding-left: 15px; }
-        
-        .chart-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-        .chart-tabs button { flex: 1; padding: 10px; background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 6px; font-weight: 700; font-size: 0.95rem; }
-        .chart-tabs button.active { background: var(--text-main); color: #fff; border-color: var(--text-main);}
-        .chart-img-area { position: relative; width: 100%; min-height: 200px; background: #fff; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; overflow: hidden; }
+
+        .chart-tabs { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
+        .chart-tabs button { flex: 1; padding: 8px; background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; border-radius: 6px; font-weight: 700; font-size: 0.9rem; transition: 0.2s; }
+        .chart-tabs button.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
+        .chart-img-area { width: 100%; background: #fff; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; overflow: hidden; min-height: 250px; }
         .chart-img-area img { width: 100%; display: block; }
 
-        .modal-info-box { background: #f8fafc; border-radius: 8px; padding: 14px; margin-bottom: 8px; font-size: 0.9rem; display: flex; justify-content: space-between; border: 1px solid var(--border-color); align-items:center;}
-        .modal-info-box span { color: var(--text-muted); font-weight:600;}
-        .modal-info-box strong { color: var(--text-main); font-weight: 800; font-family: monospace; font-size:1.05rem;}
-
-        .memo-area { margin-top: 20px; margin-bottom: 20px; }
-        .memo-area textarea { width: 100%; background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: 8px; height: 80px; resize: none; margin-bottom: 10px; font-size: 15px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);}
-        .memo-area button { width: 100%; background: var(--text-main); color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; font-size: 1rem; box-shadow: var(--shadow-sm);}
+        .modal-info-box { background: #f8fafc; border-radius: 8px; padding: 12px 16px; text-align: left; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;}
+        .modal-info-box span { color: var(--text-muted); font-weight: 600;}
+        .modal-info-box strong { color: var(--text-main); font-weight: 800;}
+        
+        .memo-area { margin-top: 20px; text-align: left; }
+        .memo-area label { font-size: 0.9rem; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight:bold;}
+        .memo-area textarea { width: 100%; background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 8px; height: 80px; resize: none; margin-bottom: 10px; font-size: 0.95rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);}
+        .memo-area textarea:focus { outline:none; border-color:var(--accent);}
+        .memo-area button { width: 100%; background: var(--text-main); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem;}
+        .memo-area button:hover { background: #0f172a; }
 
         .r4-cell { border-top: 4px solid var(--r4); } .r3-cell { border-top: 4px solid var(--r3); }
         .r2-cell { border-top: 4px solid var(--r2); } .r1-cell { border-top: 4px solid var(--r1); }
+
+        @media (max-width: 1024px) { .main-container, .journal-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>주도주 트래킹 (Mobile)</h1>
-        <p>실시간 자동 동기화(Firebase) · 1주 퀀트 백테스트</p>
+        <h1>주도주 트래킹 하이브리드 대시보드</h1>
+        <p>전수조사 데이터 · 실시간 자동 동기화(Firebase) · 1주 퀀트 백테스팅</p>
     </header>
 
-    <div class="section">
+    <div class="section-box">
         <h2 class="h2-journal">📝 매일 매매일지 장부</h2>
-        <div class="journal-form">
-            <input type="date" id="journalDate">
-            <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 매매)">
-            <textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
-            <input type="file" id="journalImage" accept="image/*">
-            <button onclick="saveJournal()">일지 클라우드 저장</button>
-        </div>
-        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 검색..." onkeyup="filterJournals()">
-        <ul class="journal-list" id="journalList"></ul>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-quant">📊 퀀트 시스템 매매 로직 & 포착</h2>
-        
-        <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
-            <h3 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px;">✅ 매수 조건</h3>
-            <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 20px; line-height: 1.5; margin-bottom: 12px;">
-                <li>거래량 ≥ 최근 20일 평균 2배</li>
-                <li>당일 BB 상단 > 5일 전 BB 상단</li>
-                <li>당일 종가 > 최근 20일 최고가 돌파</li>
-            </ul>
-            <h3 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px;">🛑 매도 조건</h3>
-            <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 20px; line-height: 1.5;">
-                <li>종가 < 돌파했던 전고점</li>
-                <li>종가 < 20일 이동평균선</li>
-            </ul>
-        </div>
-        
-        <h3 style="font-size: 0.95rem; color: #ec4899; margin-bottom: 12px;">🚨 오늘 위 조건을 완벽히 충족한 종목</h3>
-        <div class="horizontal-scroll" id="quantStockList">
-            <div class="empty-state">조건을 충족한 종목이 없습니다.</div>
+        <div class="journal-container">
+            <div class="journal-form">
+                <input type="date" id="journalDate">
+                <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 주도 섹터 매매)">
+                <textarea id="journalContent" placeholder="오늘의 매매 내용, 피드백, 특이사항을 기록하세요."></textarea>
+                <input type="file" id="journalImage" accept="image/*" title="캡쳐본 첨부">
+                <button onclick="saveJournal()">일지 클라우드 저장</button>
+            </div>
+            <div>
+                <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 키워드 검색..." onkeyup="filterJournals()">
+                <ul class="journal-list" id="journalList"></ul>
+            </div>
         </div>
     </div>
 
-    <div class="section">
-        <h2 class="h2-verify">🕵️ 실전 패턴 검색기</h2>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">최근 3일 궤적을 선택해 종목을 찾습니다.</p>
+    <div class="section-box">
+        <h2 class="h2-quant">📊 퀀트 시스템 매매 로직 & 실시간 포착</h2>
+        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 320px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <h3 style="font-size: 1rem; color: var(--text-main); margin-bottom: 10px;">✅ 매수 조건 (Entry Rule)</h3>
+                <ul style="font-size: 0.9rem; color: var(--text-muted); margin-left: 20px; line-height: 1.6; margin-bottom: 16px;">
+                    <li><strong>거래량 폭발:</strong> 당일 거래량 ≥ 최근 20일 평균 거래량 2배 (200%)</li>
+                    <li><strong>가짜 돌파 필터링:</strong> 당일 BB 상단값 > 5일 전 BB 상단값 (확장/우상향)</li>
+                    <li><strong>가격 돌파:</strong> 당일 종가 > 주요 전고점 (최근 20일 최고가 돌파)</li>
+                </ul>
+                <h3 style="font-size: 1rem; color: var(--text-main); margin-bottom: 10px;">🛑 매도 및 손절 조건 (Exit Rule)</h3>
+                <ul style="font-size: 0.9rem; color: var(--text-muted); margin-left: 20px; line-height: 1.6;">
+                    <li><strong>지지선 이탈:</strong> 당일 종가 &lt; 돌파했던 전고점</li>
+                    <li><strong>추세 이탈:</strong> 당일 종가 &lt; 20일 이동평균선 (BB 중심선 이탈)</li>
+                </ul>
+            </div>
+            
+            <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column;">
+                <h3 style="font-size: 1rem; color: #ec4899; margin-bottom: 12px;">🚨 오늘 위 조건을 완벽히 충족한 종목</h3>
+                <div class="horizontal-scroll" id="quantStockList" style="flex-grow: 1;">
+                    <div class="empty-state">조건을 충족한 종목이 없습니다.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <h2 class="h2-verify">🕵️ 실전 패턴 검색기 (최근 3일 궤적)</h2>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:15px;">과거 3일간 종목이 이동한 매트릭스 경로를 설정하여 해당 패턴의 종목을 찾아냅니다.</p>
         <div class="verify-controls">
             <div class="verify-select-group">
-                <label>D-2 (2일전)</label>
+                <label>2일 전 (D-2)</label>
                 <select id="vDay1"><option value="">상관 없음</option></select>
             </div>
+            <span style="color:var(--text-muted); font-weight:bold;">➔</span>
             <div class="verify-select-group">
-                <label>D-1 (어제)</label>
+                <label>1일 전 (D-1)</label>
                 <select id="vDay2"><option value="">상관 없음</option></select>
             </div>
+            <span style="color:var(--text-muted); font-weight:bold;">➔</span>
             <div class="verify-select-group">
-                <label>D-Day (오늘)</label>
+                <label>오늘 (D-Day)</label>
                 <select id="vDay3"><option value="">상관 없음</option></select>
             </div>
             <button class="btn-verify" onclick="searchPattern()">🔍 패턴 검색</button>
         </div>
         <div class="horizontal-scroll" id="verifyGrid">
-            <div class="empty-state">패턴 선택 후 검색해주세요.</div>
+            <div class="empty-state">패턴을 선택하고 검색 버튼을 눌러주세요.</div>
         </div>
     </div>
 
-    <div class="section">
-        <h2 class="h2-high">🏆 52주/역사적 신고가 (오늘)</h2>
-        <div class="horizontal-scroll" id="newHighGrid"></div>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-fav">⭐ 즐겨찾기 <span id="syncStatus" style="font-size:0.75rem; color:#10b981; float:right; background:#ecfdf5; padding:4px 8px; border-radius:6px;">🟢 실시간 연동 중</span></h2>
-        <input type="text" id="favSearch" class="search-bar" placeholder="🔍 종목명 검색..." onkeyup="renderFavorites()">
-        <div class="horizontal-scroll" id="favoriteGrid">
-            <div style="color:var(--text-muted); font-size:0.8rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
+    <div class="section-box">
+        <h2 class="h2-high">🏆 52주 / 역사적 신고가 돌파 (오늘)</h2>
+        <div class="horizontal-scroll" id="newHighGrid">
+            <div class="empty-state">데이터 로드 중...</div>
         </div>
     </div>
 
-    <div class="section">
-        <h2 class="h2-matrix">📊 핵심 포착 (R2C3 ~ R4C4)</h2>
-        <div class="matrix-mobile-container" id="matrixGrid"></div>
+    <div class="main-container">
+        <div class="matrix-wrapper">
+            <div class="grid-labels">
+                <div>C1 (60일 평균 미달)</div>
+                <div>C2 (평균비 100%~200%)</div>
+                <div>C3 (평균비 200%~400%)</div>
+                <div>C4 (평균비 400% 이상)</div>
+            </div>
+            <div class="matrix-grid" id="matrixGrid"></div>
+        </div>
+
+        <div class="ma-board">
+            <h2>🚀 강력 이평선 돌파 (오늘)</h2>
+            <ul class="ma-list" id="maList"><li class="ma-item empty-state">데이터 로드 중...</li></ul>
+        </div>
     </div>
 
-    <div class="section">
-        <h2 class="h2-ma">🚀 강력 이평선 돌파 (오늘)</h2>
-        <ul class="ma-list" id="maList"></ul>
+    <div class="section-box">
+        <h2 class="h2-fav">⭐ 나의 즐겨찾기 종목 <span id="syncStatus" style="font-size:0.85rem; color:#10b981; float:right; background:#ecfdf5; padding:4px 8px; border-radius:6px;">🟢 실시간 연동 중</span></h2>
+        <input type="text" id="favSearch" class="search-bar" placeholder="🔍 즐겨찾기 종목명 검색..." onkeyup="renderFavorites()">
+        <div class="horizontal-scroll" id="favoriteGrid"></div>
     </div>
 
-    <div class="section">
-        <h2 class="h2-rank">🔥 C4 랭킹 (확률순 정렬)</h2>
-        <div class="ranking-container" id="rankingContainer"></div>
+    <div class="section-box">
+        <h2 class="h2-rank">🔥 일자별 C4 주도주 백테스트 (확률 높은 순 정렬)</h2>
+        <div id="rankingContainer"></div>
     </div>
 
     <div class="modal" id="stockModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title-wrapper">
-                    <h2 class="modal-title" id="mName">종목명</h2>
-                    <div id="btnFavoriteToggle" class="btn-favorite-toggle" onclick="toggleFavorite()">☆</div>
-                </div>
-                <div class="modal-close" onclick="closeModal()">&times;</div>
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div class="modal-title-wrapper">
+                <h2 class="modal-title" id="mName">종목명</h2>
+                <span id="btnFavoriteToggle" class="btn-favorite-toggle" onclick="toggleFavorite()">☆</span>
             </div>
             
             <div class="chart-tabs">
@@ -238,24 +286,24 @@
             </div>
 
             <div class="modal-info-box"><span>종목 코드</span> <strong id="mCode">000000</strong></div>
-            <div class="modal-info-box"><span>오늘 상승률</span> <strong id="mChange" style="color: #dc2626;">+0.0%</strong></div>
+            <div class="modal-info-box"><span>오늘 상승률</span> <strong id="mChange" style="color: #ef4444;">+0.0%</strong></div>
             <div class="modal-info-box"><span>60일 평균비 거래량</span> <strong id="mVolume">0.0%</strong></div>
-            <div class="modal-info-box" style="border: 1px dashed #cbd5e1; margin-top: 16px; background:#fff;">
+            <div class="modal-info-box" style="border: 1px dashed #cbd5e1; margin-top: 12px; background:#fff;">
                 <span>🎯 최초 돌파 날짜</span> <strong id="mFirstDate">2026-00-00</strong>
             </div>
             <div class="modal-info-box" style="background:#fff;"><span>🎯 최초 돌파 위치</span> <strong id="mFirstCell" style="color: var(--accent);">R0C0</strong></div>
             
             <div class="memo-area">
-                <label>📌 종목 메모 (클라우드 저장)</label>
-                <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항 메모..."></textarea>
-                <button onclick="saveStockMemo()">메모 저장</button>
+                <label>📌 개별 종목 메모 (클라우드)</label>
+                <textarea id="mMemoInput" placeholder="투자 아이디어나 특이사항을 메모하세요..."></textarea>
+                <button onclick="saveStockMemo()">클라우드 저장</button>
             </div>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // 🔥 Firebase 설정 (아래 정보를 본인의 키로 꼭 변경하세요!)
+        // 🔥 Firebase 설정 (사용자의 실제 설정값 복구)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDBM-464HJT4MWY_23aPymrskYedPckoeI",
@@ -272,7 +320,7 @@
 
         let cloudData = { journals: [], favorites: {}, memos: {} };
 
-        // 🌟 실시간 데이터 구독
+        // 🌟 실시간 데이터 구독 (Firestore)
         userDocRef.onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
@@ -369,9 +417,8 @@
                 hasItem = true;
                 const card = document.createElement('div');
                 card.className = 'ranking-card';
-                card.style.flex = '0 0 60vw'; 
                 card.onclick = () => triggerModalByCode(code, name);
-
+                
                 let pathStr = "기록 없음";
                 if(globalRecentPaths[code] && globalRecentPaths[code].path.length > 0) {
                     pathStr = globalRecentPaths[code].path.join(' ➔ ');
@@ -489,7 +536,7 @@
                     if (data.captured[cell].length > maxCount) maxCount = data.captured[cell].length;
                 }
 
-                // [1] 매트릭스 렌더링 
+                // [1] 매트릭스 렌더링
                 const gridContainer = document.getElementById('matrixGrid');
                 gridContainer.innerHTML = '';
                 let hasData = false;
@@ -499,18 +546,17 @@
                         const cellId = `R${r}C${c}`;
                         const stocks = data.captured[cellId] || [];
                         
-                        let intensity = stocks.length > 0 ? (stocks.length / maxCount) * 0.15 : 0;
-
+                        let intensity = stocks.length > 0 ? (stocks.length / maxCount) * 0.15 : 0; 
+                        
                         if (stocks.length > 0) {
                             hasData = true;
                             const cell = document.createElement('div');
                             cell.className = `matrix-cell r${r}-cell`;
                             cell.style.backgroundColor = `rgba(239, 68, 68, ${intensity})`;
-                            
+
                             cell.innerHTML = `
                                 <div class="cell-header" style="color: var(--r${r});">
-                                    <span class="cell-title">${cellId} [${theme2Names[cellId]}]</span>
-                                    <span class="cell-subtitle">📈 ${rowRanges[r]} | 📊 ${colRanges[c]}</span>
+                                    <span>${cellId}</span><span>${rowTitles[r]}</span>
                                 </div>
                                 <ul class="stock-list" id="mlist-${cellId}"></ul>
                             `;
@@ -550,7 +596,7 @@
                     });
                 }
 
-                // [2] 신고가 (가로 스크롤)
+                // [2] 신고가 렌더링
                 const highContainer = document.getElementById('newHighGrid');
                 highContainer.innerHTML = '';
                 const highList = data.new_highs || [];
@@ -563,15 +609,14 @@
                         card.style.flex = '0 0 60vw';
                         card.onclick = () => triggerModalByCode(item.code, item.name);
                         const badgeColor = item.type === '역사적 신고가' ? 'bg-ath' : 'bg-52w';
-                        card.innerHTML = `<div class="rank-info"><span class="rank-name">${item.name}</span><span class="badge ${badgeColor}">${item.type}</span></div><div class="rank-info"><span class="rank-code">${item.code}</span></div>`;
+                        card.innerHTML = `<div class="rank-info"><span class="rank-name">${item.name}</span><span class="badge ${badgeColor}" style="width:max-content;">${item.type}</span></div><div class="rank-info"><span class="rank-code">${item.code}</span></div>`;
                         highContainer.appendChild(card);
                     });
                 }
 
-                // [3] 이평선 
+                // [3] 이평선 렌더링
                 const maContainer = document.getElementById('maList');
                 maContainer.innerHTML = '';
-                
                 let maStocks = data.ma_breakthroughs || [];
                 maStocks.forEach(s => { s.breakCount = (s.ma5?1:0) + (s.ma20?1:0) + (s.ma60?1:0); });
                 const filteredMaStocks = maStocks.filter(s => s.breakCount >= 2).sort((a, b) => b.breakCount - a.breakCount);
@@ -590,7 +635,7 @@
                         
                         li.innerHTML = `
                             <div>
-                                <strong style="color:var(--text-main); font-size:1.05rem;">${stock.name}</strong> <span style="font-size:0.75rem; color:var(--accent);">(${todayStr})</span>
+                                <strong style="color:var(--text-main); font-size:1rem;">${stock.name}</strong> <span style="font-size:0.75rem; color:var(--accent);">(${todayStr})</span>
                                 <span style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:2px;">${stock.code}</span>
                             </div>
                             <div class="ma-badges">${badges}</div>
@@ -599,14 +644,14 @@
                     });
                 }
 
-                // [4] 백테스팅 누적 랭킹
+                // [4] 누적 랭킹 5회 이상 & 확률순 정렬
                 const rankContainer = document.getElementById('rankingContainer');
                 rankContainer.innerHTML = '';
                 const c4Stats = data.c4_statistics || {};
                 
                 const dateGroups = {};
                 (data.rankings || []).forEach(item => {
-                    if(item.count < 5) return;
+                    if(item.count < 5) return; 
                     const dateStr = item.first_date;
                     if(!dateGroups[dateStr]) dateGroups[dateStr] = [];
                     dateGroups[dateStr].push(item);
@@ -622,7 +667,7 @@
                     groupDiv.innerHTML = `<div class="date-title">📅 최초 돌파일: ${date} ${date === todayStr ? '(오늘 신규)' : ''}</div>`;
                     
                     const gridDiv = document.createElement('div');
-                    gridDiv.className = 'horizontal-scroll';
+                    gridDiv.className = 'horizontal-scroll'; 
                     
                     let groupStocks = dateGroups[date];
                     groupStocks.sort((a, b) => {
@@ -637,29 +682,28 @@
                         const card = document.createElement('div');
                         card.className = 'ranking-card';
                         card.onclick = () => triggerModalByCode(item.code, item.name);
-                        
                         let plusMarks = '+'.repeat(Math.min(item.count, 10)) + (item.count > 10 ? '+' : '');
-                        let historyStr = (item.history_cells || []).join(' ➔ ');
+                        
+                        let historyStr = (item.history_cells || []).join(' → ');
                         let stat = c4Stats[item.finale_cell] || {prob_a: 0.0, prob_b: 0.0, total: 0};
 
                         card.innerHTML = `
-                            <div class="rank-info" style="margin-bottom:4px;">
+                            <div class="rank-info" style="margin-bottom: 5px;">
                                 <span class="rank-name">${item.name}</span>
                                 <span class="rank-code">${item.code}</span>
                             </div>
-                            <div class="rank-path" style="margin-bottom:10px;">
-                                <strong style="color:var(--text-main);">경로:</strong> ${historyStr}
+                            <div class="rank-path">누적 경로: <strong style="color:var(--text-main); font-weight:700;">${historyStr}</strong></div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:10px; font-weight:600;">
+                                📍 피날레: <strong style="color:var(--accent);">[${item.finale_cell}]</strong>
                             </div>
                             
-                            <div style="font-size:0.8rem; color:var(--text-muted);">📍 피날레: <strong style="color:var(--accent);">[${item.finale_cell}]</strong></div>
-                            
-                            <div class="stat-row"><span style="color:var(--text-main);">📈 최고 +20%</span><strong style="color:${getProbColor(stat.prob_a)}">${stat.prob_a}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">📈 1주 최고 +20%</span><strong style="color:${getProbColor(stat.prob_a)}; font-size:0.95rem;">${stat.prob_a}%</strong></div>
                             <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_a}%; background:${getProbColor(stat.prob_a)}"></div></div>
 
-                            <div class="stat-row"><span style="color:var(--text-main);">📉 종가 +20%</span><strong style="color:${getProbColor(stat.prob_b)}">${stat.prob_b}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">📉 1주 종가 +20%</span><strong style="color:${getProbColor(stat.prob_b)}; font-size:0.95rem;">${stat.prob_b}%</strong></div>
                             <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_b}%; background:${getProbColor(stat.prob_b)}"></div></div>
                             
-                            <div class="rank-count">${plusMarks}</div>
+                            <div style="text-align:right; margin-top:10px;"><span class="rank-count">${plusMarks}</span></div>
                         `;
                         gridDiv.appendChild(card);
                     });
@@ -667,8 +711,7 @@
                     rankContainer.appendChild(groupDiv);
                 });
 
-                if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 카운트 5회 이상 주도주가 없습니다.</div>';
-                // Firebase 데이터를 기반으로 즐겨찾기는 별도 렌더링되므로 여기서 호출 생략.
+                if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 포착 카운트 5회 이상인 주도주가 아직 없습니다.</div>';
 
             } catch (error) { console.error("데이터 로드 실패:", error); }
         }
