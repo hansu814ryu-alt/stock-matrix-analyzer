@@ -5,7 +5,7 @@ import os
 import json
 import time
 
-print("🚀 [시스템 개정] 60일 평균 거래량 기반 + 사용자 맞춤 퀀트 매수 조건 스캐너 가동...")
+print("🚀 [시스템 개정] AI 차트 분석(수급선/스윙선) & 퀀트 데이터 추출 스캐너 가동...")
 
 df_krx = fdr.StockListing('KRX')
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
@@ -31,7 +31,7 @@ matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
 today_captured_list = []
 ma_breakthrough_stocks = []
 new_high_stocks = []
-quant_captured_stocks = [] # [신규] 사용자 지정 퀀트 매수 조건 포착 리스트
+quant_captured_stocks = []
 
 print(f"📥 [2단계] {len(target_codes)}개 종목 전수조사 및 퀀트 조건 판별 중...")
 
@@ -41,17 +41,15 @@ for code in target_codes:
         df = fdr.DataReader(code_str, start=start_date, end=today_str)
         if len(df) < 61: continue 
         
-        # 기본 이평선 및 60일 거래량
         df['MA5'] = df['Close'].rolling(5).mean()
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA60'] = df['Close'].rolling(60).mean()
         df['MA60_Vol'] = df['Volume'].rolling(60).mean()
         
-        # [신규] 퀀트 매매 로직을 위한 지표 계산
-        df['MA20_Vol'] = df['Volume'].rolling(20).mean() # 20일 평균 거래량
+        df['MA20_Vol'] = df['Volume'].rolling(20).mean() 
         df['Std20'] = df['Close'].rolling(20).std()
-        df['BB_Upper'] = df['MA20'] + (df['Std20'] * 2) # 볼린저 밴드 상단
-        df['High20'] = df['High'].rolling(20).max().shift(1) # 전일 기준 최근 20일 최고가 (주요 전고점)
+        df['BB_Upper'] = df['MA20'] + (df['Std20'] * 2) 
+        df['High20'] = df['High'].rolling(20).max().shift(1) 
         
         today_data = df.iloc[-1]
         prev_data = df.iloc[-2]
@@ -66,42 +64,65 @@ for code in target_codes:
         vol_ratio = (today_vol / today_vol_ma60) * 100
         stock_name = name_dict.get(code_str, code_str)
 
-        # [신규] 사용자 지정 퀀트 매수 조건 (Entry Rule) 필터링
+        # 사용자 지정 퀀트 매수 조건 (Plotly 차트를 위한 OHLCV 데이터 추출 포함)
         day_minus_5_data = df.iloc[-6]
         
-        cond1_vol = today_vol >= today_data['MA20_Vol'] * 2 # 당일 거래량 >= 최근 20일 평균 거래량의 2배
-        cond2_bb = today_data['BB_Upper'] > day_minus_5_data['BB_Upper'] # 당일 BB 상단 > 5일 전 BB 상단
-        cond3_price = today_close > today_data['High20'] # 당일 종가 > 주요 전고점
+        cond1_vol = today_vol >= today_data['MA20_Vol'] * 2 
+        cond2_bb = today_data['BB_Upper'] > day_minus_5_data['BB_Upper'] 
+        cond3_price = today_close > today_data['High20'] 
         
         if change_rate > 0 and cond1_vol and cond2_bb and cond3_price:
+            # AI 차트용 120일치 캔들 및 저항선 데이터 생성
+            df_120 = df.iloc[-120:]
+            df_240 = df.iloc[-240:] if len(df) >= 240 else df
+            vol_line = float(df_240.loc[df_240['Volume'].idxmax(), 'High'])
+            swing_line = float(df.iloc[-60:]['High'].max())
+            
             quant_captured_stocks.append({
-                "code": code_str,
-                "name": stock_name,
-                "change": round(change_rate, 2),
-                "volume_ratio": round((today_vol / today_data['MA20_Vol']) * 100, 1) # 20일 평균 대비 거래량
+                "code": code_str, "name": stock_name, "change": round(change_rate, 2), "volume_ratio": round((today_vol / today_data['MA20_Vol']) * 100, 1),
+                "ohlcv": {
+                    "dates": df_120.index.strftime('%Y-%m-%d').tolist(),
+                    "open": df_120['Open'].tolist(), "high": df_120['High'].tolist(),
+                    "low": df_120['Low'].tolist(), "close": df_120['Close'].tolist(), "volume": df_120['Volume'].tolist(),
+                    "vol_line": vol_line, "swing_line": swing_line
+                }
             })
 
-        # 기존 52주 신고가 로직
+        # 기존 52주 신고가 로직 (여기에도 AI 차트를 위해 OHLCV 데이터 탑재)
         if change_rate > 0:
             df_1yr = df.iloc[-252:] if len(df) >= 252 else df
             high_52w = df_1yr['High'].max()
             high_all = df['High'].max()
+            
+            is_new_high = False
+            high_type = ""
             if today_close >= high_all:
-                new_high_stocks.append({"code": code_str, "name": stock_name, "type": "역사적 신고가"})
+                is_new_high = True; high_type = "역사적 신고가"
             elif today_close >= high_52w:
-                new_high_stocks.append({"code": code_str, "name": stock_name, "type": "52주 신고가"})
+                is_new_high = True; high_type = "52주 신고가"
+                
+            if is_new_high:
+                ohlcv_data = None
+                if len(new_high_stocks) < 10: # 용량 관리를 위해 10개만 차트 데이터 첨부
+                    df_120 = df.iloc[-120:]
+                    df_240 = df.iloc[-240:] if len(df) >= 240 else df
+                    vol_line = float(df_240.loc[df_240['Volume'].idxmax(), 'High'])
+                    swing_line = float(df.iloc[-60:]['High'].max())
+                    ohlcv_data = {
+                        "dates": df_120.index.strftime('%Y-%m-%d').tolist(),
+                        "open": df_120['Open'].tolist(), "high": df_120['High'].tolist(),
+                        "low": df_120['Low'].tolist(), "close": df_120['Close'].tolist(), "volume": df_120['Volume'].tolist(),
+                        "vol_line": vol_line, "swing_line": swing_line
+                    }
+                new_high_stocks.append({ "code": code_str, "name": stock_name, "type": high_type, "ohlcv": ohlcv_data })
 
         if change_rate <= 0: continue 
         
         break_ma5 = bool(prev_data['Close'] <= prev_data['MA5'] and today_close > today_data['MA5'])
         break_ma20 = bool(prev_data['Close'] <= prev_data['MA20'] and today_close > today_data['MA20'])
         break_ma60 = bool(prev_data['Close'] <= prev_data['MA60'] and today_close > today_data['MA60'])
-        
         if break_ma5 or break_ma20 or break_ma60:
-            ma_breakthrough_stocks.append({
-                "code": code_str, "name": stock_name,
-                "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60
-            })
+            ma_breakthrough_stocks.append({"code": code_str, "name": stock_name, "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60})
             
         row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
         col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < 400 else 4
@@ -117,124 +138,4 @@ for code in target_codes:
             
         matrix_results[cell_id].append({
             "code": code_str, "name": stock_name, "change": round(change_rate, 2), "volume": round(vol_ratio, 1),
-            "first_date": first_date, "first_cell": first_cell
-        })
-        
-        today_captured_list.append({
-            'Date': today_str, 'Code': code_str, 'Name': stock_name, 'Cell': cell_id,
-            'Base_Price': today_close, '1D_Return': None, '3D_Return': None, '5D_Return': None, 'Settled_Count': 0
-        })
-        
-    except Exception as e:
-        pass
-    time.sleep(0.02)
-
-print("📝 [3단계] 기본 장부 정산 중...")
-df_unsettled = df_history[df_history['Settled_Count'] < 3]
-
-for idx, row_data in df_unsettled.iterrows():
-    code_str = str(row_data['Code']).zfill(6)
-    try:
-        df_stock = fdr.DataReader(code_str, start=row_data['Date'], end=today_str)
-        passed_days = len(df_stock) - 1
-        
-        if passed_days >= 1 and pd.isna(df_history.loc[idx, '1D_Return']):
-            df_history.loc[idx, '1D_Return'] = round(((df_stock.iloc[1]['Close'] - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-            df_history.loc[idx, 'Settled_Count'] += 1
-        if passed_days >= 3 and pd.isna(df_history.loc[idx, '3D_Return']):
-            idx_3d = min(3, len(df_stock)-1)
-            df_history.loc[idx, '3D_Return'] = round(((df_stock.iloc[idx_3d]['Close'] - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-            df_history.loc[idx, 'Settled_Count'] += 1
-        if passed_days >= 5 and pd.isna(df_history.loc[idx, '5D_Return']):
-            idx_5d = min(5, len(df_stock)-1)
-            df_history.loc[idx, '5D_Return'] = round(((df_stock.iloc[idx_5d]['Close'] - row_data['Base_Price']) / row_data['Base_Price']) * 100, 2)
-            df_history.loc[idx, 'Settled_Count'] += 1
-    except:
-        pass
-
-if today_captured_list:
-    df_history = pd.concat([df_history, pd.DataFrame(today_captured_list)], ignore_index=True)
-df_history.to_csv(history_file, index=False)
-
-print("📊 [4단계] 퀀트 백테스팅 스캔...")
-ranking_list = []
-c4_stats_data = {
-    'R2C4': {'total':0, 'a_suc':0, 'b_suc':0},
-    'R3C4': {'total':0, 'a_suc':0, 'b_suc':0},
-    'R4C4': {'total':0, 'a_suc':0, 'b_suc':0}
-}
-
-if not df_history.empty:
-    c4_cells = ['R2C4', 'R3C4', 'R4C4']
-    df_c4_history = df_history[df_history['Cell'].isin(c4_cells)].sort_values(by=['Code', 'Date'])
-    
-    for code, group in df_c4_history.groupby('Code'):
-        count = len(group)
-        if count >= 5:
-            code_str = str(code).zfill(6)
-            fifth_event = group.iloc[4]
-            d_day = str(fifth_event['Date'])
-            finale_cell = str(fifth_event['Cell'])
-            base_price = float(fifth_event['Base_Price'])
-            
-            try:
-                df_future = fdr.DataReader(code_str, start=d_day).iloc[1:6]
-                if len(df_future) > 0:
-                    c4_stats_data[finale_cell]['total'] += 1
-                    max_high = df_future['High'].max()
-                    last_close = df_future['Close'].iloc[-1]
-                    
-                    if max_high >= base_price * 1.2:
-                        c4_stats_data[finale_cell]['a_suc'] += 1
-                    if last_close >= base_price * 1.2:
-                        c4_stats_data[finale_cell]['b_suc'] += 1
-            except:
-                pass
-            
-            first_date = str(group['Date'].min())
-            cells_path = group['Cell'].tolist()
-            ranking_list.append({
-                "code": code_str, 
-                "name": name_dict.get(code_str, code_str), 
-                "count": int(count),
-                "first_date": first_date,
-                "history_cells": cells_path,
-                "finale_cell": finale_cell
-            })
-    
-    ranking_list = sorted(ranking_list, key=lambda x: x['count'], reverse=True)
-
-c4_statistics = {}
-for cell, s in c4_stats_data.items():
-    tot = s['total']
-    prob_a = round((s['a_suc'] / tot * 100), 1) if tot > 0 else 0.0
-    prob_b = round((s['b_suc'] / tot * 100), 1) if tot > 0 else 0.0
-    c4_statistics[cell] = {'prob_a': prob_a, 'prob_b': prob_b, 'total': tot}
-
-print("🕵️ [5단계] 실전 패턴 검색용 최근 3일치 궤적(Path) 추출 중...")
-recent_paths = {}
-if not df_history.empty:
-    df_sorted = df_history.sort_values(by=['Code', 'Date'])
-    for code, group in df_sorted.groupby('Code'):
-        code_str = str(code).zfill(6)
-        path = group['Cell'].tail(3).tolist() 
-        recent_paths[code_str] = {
-            "name": name_dict.get(code_str, code_str),
-            "path": path
-        }
-
-print("⚙️ [6단계] 웹 배포용 고밀도 단일 JSON 패키징 빌드...")
-final_web_data = {
-    "captured": matrix_results,         
-    "rankings": ranking_list,           
-    "ma_breakthroughs": ma_breakthrough_stocks,
-    "new_highs": new_high_stocks,
-    "c4_statistics": c4_statistics,
-    "recent_paths": recent_paths,
-    "quant_captured": quant_captured_stocks # [신규] 퀀트 매수 조건 포착 종목 전달
-}
-
-with open('matrix_data.json', 'w', encoding='utf-8') as f:
-    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
-
-print("🎉 개정 로직 배포 준비 완료!")
+            "first_date": first
