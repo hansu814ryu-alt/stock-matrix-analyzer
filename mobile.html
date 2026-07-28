@@ -10,7 +10,6 @@
     
     <style>
         :root {
-            /* 💡 라이트 모드 (White Version) 색상표 - 모바일 */
             --bg-color: #f8fafc; 
             --card-bg: #ffffff; 
             --text-main: #1e293b; 
@@ -33,64 +32,37 @@
 
         .section { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);}
         .section h2 { font-size: 1.15rem; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); font-weight: 800;}
-        .h2-matrix { color: var(--accent); border-color: rgba(2, 132, 199, 0.2); }
         .h2-ma { color: #e11d48; border-color: rgba(225, 29, 72, 0.2); }
         .h2-fav { color: var(--favorite); border-color: rgba(217, 119, 6, 0.2); }
-        .h2-rank { color: #059669; border-color: rgba(5, 150, 105, 0.2); }
         .h2-high { color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
-        .h2-verify { color: var(--verify); border-color: rgba(124, 58, 237, 0.2); }
         .h2-quant { color: #ec4899; border-color: rgba(236, 72, 153, 0.2); }
 
         .search-bar { width: 100%; background: #f1f5f9; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; color: var(--text-main); margin-bottom: 16px; font-size: 15px; }
         .search-bar:focus { outline:none; border-color: var(--accent); background: #fff;}
 
-        .verify-controls { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom:16px;}
-        .verify-select-group { display: flex; justify-content: space-between; align-items: center; }
-        .verify-select-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; width: 80px;}
-        .verify-select-group select { flex: 1; background: #fff; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-size: 0.95rem; }
-        .btn-verify { background: var(--verify); color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; cursor: pointer; margin-top: 6px; }
-
-        .matrix-mobile-container { display: flex; flex-direction: column; gap: 12px; }
-        .matrix-cell { border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; transition: background 0.3s; background: #fff;}
-        .cell-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 4px; }
-        .cell-title { font-size: 1.1rem; font-weight: 800; }
-        .cell-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
         .empty-state { display: flex; justify-content: center; align-items: center; font-size: 0.85rem; color: var(--text-muted); background: #f8fafc; border-radius: 8px; padding: 16px; font-weight: 500;}
         
-        .stock-list, .ma-list, .journal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .stock-item { font-size: 0.95rem; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight:600;}
-        .stock-item:active { background: #f1f5f9; border-color: var(--accent);}
-        .stock-change { font-weight: 800; }
-
-        .ma-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
         .badge { font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; font-weight: bold; color: #fff; }
         .bg-ma5 { background-color: #3b82f6; } .bg-ma20 { background-color: #eab308; } .bg-ma60 { background-color: #a855f7; }
         .bg-ath { background-color: #ef4444; } .bg-52w { background-color: #f59e0b; }
 
-        /* 가로 스와이프 UI */
+        /* 가로 스와이프 UI (Mobile) */
         .horizontal-scroll { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 12px; scroll-snap-type: x mandatory; margin: 0 -8px; padding: 0 8px 12px 8px; }
         .horizontal-scroll::-webkit-scrollbar { display: none; }
-        
-        .ranking-container { display: flex; flex-direction: column; gap: 16px; }
-        .date-title { font-size: 0.95rem; color: #059669; margin-bottom: 10px; font-weight: 800; background: #ecfdf5; padding: 6px 12px; border-radius: 6px; display: inline-block;}
-        .ranking-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         
         .ranking-card { flex: 0 0 85vw; scroll-snap-align: center; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; box-shadow: var(--shadow-sm);}
         .rank-info { display: flex; justify-content: space-between; align-items: center; }
         .rank-name { font-size: 1.05rem; font-weight: 800; color: var(--text-main);}
         .rank-code { font-size: 0.8rem; color: var(--text-muted); background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600;}
-        .rank-path { font-size: 0.85rem; color: #475569; line-height: 1.4; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;}
 
         .stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-top: 8px; color: var(--text-main);}
-        .progress-bg { width: 100%; background: #e2e8f0; border-radius: 4px; height: 8px; margin-top: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; }
-        .rank-count { font-size: 1.25rem; color: #dc2626; font-weight: 900; letter-spacing: 1px; text-align: right; margin-top: 8px;}
-
+        
         .journal-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
         .journal-form input, .journal-form textarea { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 15px; }
         .journal-form textarea { resize: none; height: 90px; }
         .journal-form button { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: var(--shadow-sm);}
         
+        .journal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
         .journal-item { background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; position: relative; box-shadow: var(--shadow-sm);}
         .journal-item-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
         .journal-item-title { font-weight: 800; color: var(--text-main); font-size: 1.05rem; margin-bottom: 6px; }
@@ -99,7 +71,7 @@
         .journal-del-btn { background: none; border: none; color: #ef4444; font-size: 0.85rem; font-weight: bold; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px); z-index: 1000; overflow-y: auto; padding: 20px 15px; flex-direction: column; }
-        .modal-content { background: #fff; border-radius: 16px; padding: 25px 20px; box-shadow: var(--shadow-lg);}
+        .modal-content { background: #fff; border-radius: 16px; padding: 25px 20px; box-shadow: var(--shadow-md);}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title-wrapper { display: flex; align-items: center; gap: 10px; }
         .modal-title { font-size: 1.4rem; color: var(--text-main); font-weight: 800; }
@@ -111,7 +83,6 @@
         .chart-tabs button { flex: 1; padding: 10px; background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 6px; font-weight: 700; font-size: 0.95rem; }
         .chart-tabs button.active { background: var(--text-main); color: #fff; border-color: var(--text-main);}
         
-        /* 차트 영역 */
         .chart-img-area { position: relative; width: 100%; min-height: 200px; background: #fff; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; overflow: hidden; display:flex; justify-content:center; align-items:center;}
         .chart-img-area img { width: 100%; display: block; }
         #mChartDiv { width: 100%; height: 250px; display: none; }
@@ -123,34 +94,30 @@
         .memo-area { margin-top: 20px; margin-bottom: 20px; }
         .memo-area textarea { width: 100%; background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: 8px; height: 80px; resize: none; margin-bottom: 10px; font-size: 15px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);}
         .memo-area button { width: 100%; background: var(--text-main); color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: bold; font-size: 1rem; box-shadow: var(--shadow-sm);}
-
-        .r4-cell { border-top: 4px solid var(--r4); } .r3-cell { border-top: 4px solid var(--r3); }
-        .r2-cell { border-top: 4px solid var(--r2); } .r1-cell { border-top: 4px solid var(--r1); }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>주도주 트래킹 (Mobile)</h1>
-        <p>AI Plotly 차트 · 실시간 자동 동기화(Firebase)</p>
+        <h1>주도주 퀀트 대시보드</h1>
+        <p>AI Plotly 차트 · 실시간 연동</p>
     </header>
 
     <div class="section">
         <h2 class="h2-journal">📝 매일 매매일지 장부</h2>
         <div class="journal-form">
             <input type="date" id="journalDate">
-            <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 매매)">
+            <input type="text" id="journalTitle" placeholder="제목 (예: 2차전지 퀀트 포착)">
             <textarea id="journalContent" placeholder="매매 내용 및 피드백 기록..."></textarea>
             <input type="file" id="journalImage" accept="image/*">
             <button onclick="saveJournal()">일지 클라우드 저장</button>
         </div>
-        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 매매일지 검색..." onkeyup="filterJournals()">
+        <input type="text" id="journalSearch" class="search-bar" placeholder="🔍 일지 검색..." onkeyup="filterJournals()">
         <ul class="journal-list" id="journalList"></ul>
     </div>
 
     <div class="section">
         <h2 class="h2-quant">📊 퀀트 시스템 매매 로직 & 포착</h2>
-        
         <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
             <h3 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px;">✅ 매수 조건</h3>
             <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 20px; line-height: 1.5; margin-bottom: 12px;">
@@ -172,31 +139,15 @@
     </div>
 
     <div class="section">
-        <h2 class="h2-verify">🕵️ 실전 패턴 검색기</h2>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">최근 3일 궤적을 선택해 종목을 찾습니다.</p>
-        <div class="verify-controls">
-            <div class="verify-select-group">
-                <label>D-2 (2일전)</label>
-                <select id="vDay1"><option value="">상관 없음</option></select>
-            </div>
-            <div class="verify-select-group">
-                <label>D-1 (어제)</label>
-                <select id="vDay2"><option value="">상관 없음</option></select>
-            </div>
-            <div class="verify-select-group">
-                <label>D-Day (오늘)</label>
-                <select id="vDay3"><option value="">상관 없음</option></select>
-            </div>
-            <button class="btn-verify" onclick="searchPattern()">🔍 패턴 검색</button>
-        </div>
-        <div class="horizontal-scroll" id="verifyGrid">
-            <div class="empty-state">패턴 선택 후 검색해주세요.</div>
-        </div>
+        <h2 class="h2-high">🏆 52주/역사적 신고가 (오늘)</h2>
+        <div class="horizontal-scroll" id="newHighGrid"></div>
     </div>
 
     <div class="section">
-        <h2 class="h2-high">🏆 52주/역사적 신고가 (오늘)</h2>
-        <div class="horizontal-scroll" id="newHighGrid"></div>
+        <h2 class="h2-high" style="color:#e11d48; border-bottom-color: rgba(225,29,72,0.2);">🚀 강력 이평선 돌파 (오늘)</h2>
+        <div class="horizontal-scroll" id="maListContainer">
+            <div class="empty-state">데이터 로드 중...</div>
+        </div>
     </div>
 
     <div class="section">
@@ -205,21 +156,6 @@
         <div class="horizontal-scroll" id="favoriteGrid">
             <div style="color:var(--text-muted); font-size:0.8rem; padding:10px;">별(☆)을 눌러 추가하세요.</div>
         </div>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-matrix">📊 핵심 포착 (R2C3 ~ R4C4)</h2>
-        <div class="matrix-mobile-container" id="matrixGrid"></div>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-ma">🚀 강력 이평선 돌파 (오늘)</h2>
-        <ul class="ma-list" id="maList"></ul>
-    </div>
-
-    <div class="section">
-        <h2 class="h2-rank">🔥 C4 랭킹 (확률순 정렬)</h2>
-        <div class="ranking-container" id="rankingContainer"></div>
     </div>
 
     <div class="modal" id="stockModal">
@@ -244,12 +180,8 @@
             </div>
 
             <div class="modal-info-box"><span>종목 코드</span> <strong id="mCode">000000</strong></div>
-            <div class="modal-info-box"><span>오늘 상승률</span> <strong id="mChange" style="color: #dc2626;">+0.0%</strong></div>
-            <div class="modal-info-box"><span>60일 평균비 거래량</span> <strong id="mVolume">0.0%</strong></div>
-            <div class="modal-info-box" style="border: 1px dashed #cbd5e1; margin-top: 16px; background:#fff;">
-                <span>🎯 최초 돌파 날짜</span> <strong id="mFirstDate">2026-00-00</strong>
-            </div>
-            <div class="modal-info-box" style="background:#fff;"><span>🎯 최초 돌파 위치</span> <strong id="mFirstCell" style="color: var(--accent);">R0C0</strong></div>
+            <div class="modal-info-box" id="modalChangeBox"><span>오늘 상승률</span> <strong id="mChange" style="color: #dc2626;">+0.0%</strong></div>
+            <div class="modal-info-box" id="modalVolumeBox"><span>20일 평균비 거래량</span> <strong id="mVolume">0.0%</strong></div>
             
             <div class="memo-area">
                 <label>📌 종목 메모 (클라우드 저장)</label>
@@ -278,7 +210,6 @@
 
         let cloudData = { journals: [], favorites: {}, memos: {} };
 
-        // 🌟 실시간 데이터 구독 (Firestore)
         userDocRef.onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
@@ -307,49 +238,16 @@
             userDocRef.set(cloudData, { merge: true }).catch(err => alert("클라우드 저장 실패: " + err.message));
         }
 
-        function getProbColor(prob) {
-            if (prob >= 50) return '#dc2626'; 
-            if (prob >= 30) return '#d97706'; 
-            return '#64748b'; 
-        }
-
-        let globalCapturedData = {};
-        let globalRecentPaths = {}; 
         let globalQuantData = [];
         let globalHighData = [];
+        let globalMaData = [];
         let currentStockCode = '';
         let currentStockName = '';
-        
-        const rowTitles = { 4: "상승 12% 이상", 3: "상승 6% ~ 12%", 2: "상승 3% ~ 6%", 1: "상승 3% 미만" };
 
         window.addEventListener('DOMContentLoaded', () => {
-            const cells = [];
-            for(let r=4; r>=1; r--) for(let c=1; c<=4; c++) cells.push(`R${r}C${c}`);
-            ['vDay1', 'vDay2', 'vDay3'].forEach(id => {
-                const select = document.getElementById(id);
-                cells.forEach(cell => {
-                    const opt = document.createElement('option');
-                    opt.value = cell; opt.innerText = cell;
-                    select.appendChild(opt);
-                });
-            });
             document.getElementById('journalDate').value = new Date().toISOString().substring(0, 10);
         });
 
-        const gridContainer = document.getElementById('matrixGrid');
-        for (let r = 4; r >= 1; r--) {
-            for (let c = 1; c <= 4; c++) {
-                const cellId = `R${r}C${c}`;
-                const cell = document.createElement('div');
-                cell.className = `matrix-cell r${r}-cell`;
-                cell.id = cellId;
-                gridContainer.appendChild(cell);
-            }
-        }
-
-        // ==========================================
-        // 📈 Plotly.js 차트 렌더링 로직 (모바일용)
-        // ==========================================
         function renderPlotlyChart(ohlcv, tickerName) {
             const trace1 = {
                 x: ohlcv.dates, open: ohlcv.open, high: ohlcv.high, low: ohlcv.low, close: ohlcv.close,
@@ -390,21 +288,9 @@
         }
 
         function triggerModalByCode(code, name) {
-            let foundStock = null;
-            
-            foundStock = globalQuantData.find(s => s.code === code);
-            if (!foundStock) {
-                foundStock = globalHighData.find(s => s.code === code);
-            }
-            if (!foundStock) {
-                for (const cell in globalCapturedData) {
-                    const target = globalCapturedData[cell].find(s => s.code === code);
-                    if (target) { foundStock = target; break; }
-                }
-            }
-            
+            let foundStock = globalQuantData.find(s => s.code === code) || globalHighData.find(s => s.code === code) || globalMaData.find(s => s.code === code);
             if (foundStock) openModal(foundStock);
-            else openModal({ code: code, name: name, change: "-", volume: "-", first_date: "-", first_cell: "-" });
+            else openModal({ code: code, name: name });
         }
 
         function toggleFavorite() {
@@ -427,69 +313,14 @@
                 hasItem = true;
                 const card = document.createElement('div');
                 card.className = 'ranking-card';
-                card.style.flex = '0 0 60vw'; 
                 card.onclick = () => triggerModalByCode(code, name);
-
-                let pathStr = "기록 없음";
-                if(globalRecentPaths[code] && globalRecentPaths[code].path.length > 0) {
-                    pathStr = globalRecentPaths[code].path.join(' ➔ ');
-                }
-
                 card.innerHTML = `
                     <div class="rank-info"><span class="rank-name">${name}</span><span class="rank-code">${code}</span></div>
-                    <div class="rank-path" style="margin-top:8px; color:var(--text-main); font-weight:700;">최근 흐름: <span style="color:var(--accent);">${pathStr}</span></div>
-                    <div style="text-align:right; margin-top:5px;"><span class="rank-count" style="color:var(--favorite);">⭐</span></div>
+                    <div style="text-align:right; margin-top:5px;"><span class="rank-count" style="color:var(--favorite); font-size:1.3rem;">⭐</span></div>
                 `;
                 container.appendChild(card);
             }
-            if(!hasItem) container.innerHTML = '<div class="empty-state" style="width:100%;">등록된 즐겨찾기가 없거나 검색 결과가 없습니다.</div>';
-        }
-
-        function searchPattern() {
-            const d1 = document.getElementById('vDay1').value; 
-            const d2 = document.getElementById('vDay2').value; 
-            const d3 = document.getElementById('vDay3').value; 
-            
-            const container = document.getElementById('verifyGrid');
-            container.innerHTML = '';
-            
-            if(!d1 && !d2 && !d3) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">최소 1개 이상의 날짜 조건을 선택해주세요.</div>';
-                return;
-            }
-            
-            let results = [];
-            for (const [code, info] of Object.entries(globalRecentPaths)) {
-                const path = info.path; 
-                const len = path.length;
-                
-                const stockD3 = len >= 1 ? path[len-1] : ""; 
-                const stockD2 = len >= 2 ? path[len-2] : ""; 
-                const stockD1 = len >= 3 ? path[len-3] : ""; 
-                
-                let match = true;
-                if (d3 && stockD3 !== d3) match = false;
-                if (d2 && stockD2 !== d2) match = false;
-                if (d1 && stockD1 !== d1) match = false;
-                
-                if (match) results.push({code, name: info.name, path});
-            }
-            
-            if (results.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="width:100%;">선택한 패턴과 일치하는 종목이 없습니다.</div>';
-                return;
-            }
-            
-            results.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'ranking-card';
-                card.onclick = () => triggerModalByCode(item.code, item.name);
-                card.innerHTML = `
-                    <div class="rank-info"><span class="rank-name">${item.name}</span><span class="rank-code">${item.code}</span></div>
-                    <div class="rank-path" style="margin-top:8px; color:var(--text-main);">발견된 궤적: <br><strong style="color:var(--accent); font-size:1.05rem;">${item.path.join(' ➔ ')}</strong></div>
-                `;
-                container.appendChild(card);
-            });
+            if(!hasItem) container.innerHTML = '<div class="empty-state">등록된 즐겨찾기가 없거나 검색 결과가 없습니다.</div>';
         }
 
         function changeChart(type, btnObj) {
@@ -497,7 +328,6 @@
             buttons.forEach(b => b.classList.remove('active'));
             btnObj.classList.add('active');
             
-            // 네이버 정적 이미지 뷰어로 강제 스왑
             document.getElementById('mChartDiv').style.display = 'none';
             document.getElementById('mChartImg').style.display = 'block';
             document.getElementById('mChartImg').src = `https://ssl.pstatic.net/imgfinance/chart/item/candle/${type}/${currentStockCode}.png?sidcode=${new Date().getTime()}`;
@@ -509,10 +339,19 @@
             
             document.getElementById('mName').innerText = stock.name;
             document.getElementById('mCode').innerText = stock.code;
-            document.getElementById('mChange').innerText = isNaN(stock.change) ? stock.change : `+${stock.change}%`;
-            document.getElementById('mVolume').innerText = isNaN(stock.volume) ? stock.volume : `${stock.volume}%`;
-            document.getElementById('mFirstDate').innerText = stock.first_date || '-';
-            document.getElementById('mFirstCell').innerText = stock.first_cell || '-';
+            
+            const changeBox = document.getElementById('modalChangeBox');
+            const volBox = document.getElementById('modalVolumeBox');
+            
+            if(stock.change !== undefined) {
+                changeBox.style.display = 'flex';
+                document.getElementById('mChange').innerText = `+${stock.change}%`;
+                document.getElementById('mVolume').innerText = stock.volume_ratio ? `${stock.volume_ratio}%` : '-';
+                volBox.style.display = 'flex';
+            } else {
+                changeBox.style.display = 'none';
+                volBox.style.display = 'none';
+            }
             
             document.getElementById('mMemoInput').value = cloudData.memos[stock.code] || '';
             
@@ -527,7 +366,6 @@
             tabs.forEach(b => b.classList.remove('active'));
             tabs[0].classList.add('active');
 
-            // [Plotly.js] AI 차트 데이터(ohlcv)가 있으면 렌더링, 없으면 기존 네이버 이미지 표시
             const imgArea = document.getElementById('mChartImg');
             const divArea = document.getElementById('mChartDiv');
             const tabArea = document.querySelector('.chart-tabs');
@@ -535,7 +373,7 @@
             if (stock.ohlcv) {
                 imgArea.style.display = 'none';
                 divArea.style.display = 'block';
-                tabArea.style.display = 'none'; // Plotly 렌더링 시 일봉 고정이므로 탭 숨김
+                tabArea.style.display = 'none'; 
                 renderPlotlyChart(stock.ohlcv, stock.name);
             } else {
                 imgArea.style.display = 'block';
@@ -560,193 +398,72 @@
                 const response = await fetch('matrix_data.json');
                 const data = await response.json();
                 
-                globalCapturedData = data.captured || {};
-                globalRecentPaths = data.recent_paths || {}; 
                 globalQuantData = data.quant_captured || [];
                 globalHighData = data.new_highs || [];
+                globalMaData = data.ma_breakthroughs || [];
                 
                 const todayStr = new Date().toISOString().substring(0, 10);
-                let maxCount = 1;
-                for (let cell in data.captured) {
-                    if (data.captured[cell].length > maxCount) maxCount = data.captured[cell].length;
-                }
 
-                // [1] 매트릭스 렌더링 
-                const gridContainer = document.getElementById('matrixGrid');
-                gridContainer.innerHTML = '';
-                let hasData = false;
-
-                for (let r = 4; r >= 2; r--) {
-                    for (let c = 4; c >= 3; c--) {
-                        const cellId = `R${r}C${c}`;
-                        const stocks = data.captured[cellId] || [];
-                        
-                        let intensity = stocks.length > 0 ? (stocks.length / maxCount) * 0.15 : 0;
-
-                        if (stocks.length > 0) {
-                            hasData = true;
-                            const cell = document.createElement('div');
-                            cell.className = `matrix-cell r${r}-cell`;
-                            cell.style.backgroundColor = `rgba(239, 68, 68, ${intensity})`;
-                            
-                            cell.innerHTML = `
-                                <div class="cell-header" style="color: var(--r${r});">
-                                    <span class="cell-title">${cellId}</span>
-                                </div>
-                                <ul class="stock-list" id="mlist-${cellId}"></ul>
-                            `;
-                            gridContainer.appendChild(cell);
-
-                            const ul = document.getElementById(`mlist-${cellId}`);
-                            stocks.forEach(stock => {
-                                const li = document.createElement('li');
-                                li.className = 'stock-item';
-                                li.onclick = () => openModal(stock);
-                                li.innerHTML = `<span style="color:var(--text-main); font-weight:700;">${stock.name}</span><span class="stock-change" style="color: var(--r${r});">+${stock.change}%</span>`;
-                                ul.appendChild(li);
-                            });
-                        }
-                    }
-                }
-                if(!hasData) gridContainer.innerHTML = '<div class="empty-state">조건에 포착된 종목이 없습니다.</div>';
-
-                // [1.5 신규] 퀀트 매수 조건 포착 종목 렌더링
+                // 1. 퀀트 포착
                 const quantContainer = document.getElementById('quantStockList');
                 quantContainer.innerHTML = '';
                 if (globalQuantData.length === 0) {
-                    quantContainer.innerHTML = '<div class="empty-state" style="width:100%;">조건을 충족한 종목이 없습니다.</div>';
+                    quantContainer.innerHTML = '<div class="empty-state">조건을 완벽히 충족한 종목이 없습니다.</div>';
                 } else {
                     globalQuantData.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'ranking-card';
-                        card.style.flex = '0 0 250px';
                         card.onclick = () => triggerModalByCode(item.code, item.name);
                         card.innerHTML = `
                             <div class="rank-info"><span class="rank-name">${item.name}</span><span class="rank-code">${item.code}</span></div>
-                            <div class="stat-row"><span style="color:var(--text-main);">오늘 상승률</span><strong style="color:var(--r4);">+${item.change}%</strong></div>
-                            <div class="stat-row"><span style="color:var(--text-main);">20일 평균비 거래량</span><strong style="color:var(--accent);">${item.volume_ratio}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">오늘 상승률</span><strong style="color:var(--r4); font-size:1.1rem;">+${item.change}%</strong></div>
+                            <div class="stat-row"><span style="color:var(--text-main);">20일 평균비 거래량</span><strong style="color:var(--accent); font-size:1.1rem;">${item.volume_ratio}%</strong></div>
                         `;
                         quantContainer.appendChild(card);
                     });
                 }
 
-                // [2] 신고가 (가로 스크롤)
+                // 2. 신고가
                 const highContainer = document.getElementById('newHighGrid');
                 highContainer.innerHTML = '';
                 if(globalHighData.length === 0) {
-                    highContainer.innerHTML = '<div class="empty-state" style="width:100%;">오늘 포착된 신고가 종목이 없습니다.</div>';
+                    highContainer.innerHTML = '<div class="empty-state">오늘 포착된 신고가 종목이 없습니다.</div>';
                 } else {
                     globalHighData.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'ranking-card';
-                        card.style.flex = '0 0 60vw';
                         card.onclick = () => triggerModalByCode(item.code, item.name);
                         const badgeColor = item.type === '역사적 신고가' ? 'bg-ath' : 'bg-52w';
-                        card.innerHTML = `<div class="rank-info"><span class="rank-name">${item.name}</span><span class="badge ${badgeColor}" style="width:max-content;">${item.type}</span></div><div class="rank-info"><span class="rank-code">${item.code}</span></div>`;
+                        card.innerHTML = `<div class="rank-info"><span class="rank-name">${item.name}</span><span class="badge ${badgeColor}">${item.type}</span></div><div class="rank-info" style="margin-top:8px;"><span class="rank-code">${item.code}</span></div>`;
                         highContainer.appendChild(card);
                     });
                 }
 
-                // [3] 이평선 
-                const maContainer = document.getElementById('maList');
+                // 3. 이평선 (가로 스크롤 레이아웃으로 변경)
+                const maContainer = document.getElementById('maListContainer');
                 maContainer.innerHTML = '';
-                let maStocks = data.ma_breakthroughs || [];
-                maStocks.forEach(s => { s.breakCount = (s.ma5?1:0) + (s.ma20?1:0) + (s.ma60?1:0); });
-                const filteredMaStocks = maStocks.filter(s => s.breakCount >= 2).sort((a, b) => b.breakCount - a.breakCount);
+                globalMaData.forEach(s => { s.breakCount = (s.ma5?1:0) + (s.ma20?1:0) + (s.ma60?1:0); });
+                globalMaData.sort((a, b) => b.breakCount - a.breakCount); 
 
-                if(filteredMaStocks.length === 0) {
-                    maContainer.innerHTML = '<li class="empty-state">이평선 2개 이상 동시 돌파 종목이 없습니다.</li>';
+                if(globalMaData.length === 0) {
+                    maContainer.innerHTML = '<div class="empty-state">이평선 돌파 종목이 없습니다.</div>';
                 } else {
-                    filteredMaStocks.forEach(stock => {
-                        const li = document.createElement('li');
-                        li.className = 'stock-item';
-                        li.onclick = () => triggerModalByCode(stock.code, stock.name);
-                        let badges = '';
-                        if (stock.ma5) badges += '<span class="badge bg-ma5">5일</span> ';
-                        if (stock.ma20) badges += '<span class="badge bg-ma20">20일</span> ';
-                        if (stock.ma60) badges += '<span class="badge bg-ma60">60일</span> ';
-                        
-                        li.innerHTML = `
-                            <div>
-                                <strong style="color:var(--text-main); font-size:1.05rem;">${stock.name}</strong> <span style="font-size:0.75rem; color:var(--accent);">(${todayStr})</span>
-                                <span style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:2px;">${stock.code}</span>
-                            </div>
-                            <div class="ma-badges">${badges}</div>
-                        `;
-                        maContainer.appendChild(li);
-                    });
-                }
-
-                // [4] 백테스팅 누적 랭킹
-                const rankContainer = document.getElementById('rankingContainer');
-                rankContainer.innerHTML = '';
-                const c4Stats = data.c4_statistics || {};
-                
-                const dateGroups = {};
-                (data.rankings || []).forEach(item => {
-                    if(item.count < 5) return;
-                    const dateStr = item.first_date;
-                    if(!dateGroups[dateStr]) dateGroups[dateStr] = [];
-                    dateGroups[dateStr].push(item);
-                });
-
-                const sortedDates = Object.keys(dateGroups).sort((a, b) => b.localeCompare(a));
-                let rankHasData = false;
-
-                sortedDates.forEach(date => {
-                    rankHasData = true;
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = 'date-group';
-                    groupDiv.innerHTML = `<div class="date-title">📅 최초 돌파일: ${date} ${date === todayStr ? '(오늘 신규)' : ''}</div>`;
-                    
-                    const gridDiv = document.createElement('div');
-                    gridDiv.className = 'horizontal-scroll';
-                    
-                    let groupStocks = dateGroups[date];
-                    groupStocks.sort((a, b) => {
-                        let statA = c4Stats[a.finale_cell] || {prob_a: 0, prob_b: 0};
-                        let statB = c4Stats[b.finale_cell] || {prob_a: 0, prob_b: 0};
-                        if (statB.prob_a !== statA.prob_a) return statB.prob_a - statA.prob_a;
-                        if (statB.prob_b !== statA.prob_b) return statB.prob_b - statA.prob_b;
-                        return b.count - a.count;
-                    });
-
-                    groupStocks.forEach(item => {
+                    globalMaData.forEach(stock => {
                         const card = document.createElement('div');
                         card.className = 'ranking-card';
-                        card.onclick = () => triggerModalByCode(item.code, item.name);
+                        card.onclick = () => triggerModalByCode(stock.code, stock.name);
+                        let badges = '';
+                        if (stock.ma5) badges += '<span class="badge bg-ma5">5일선</span> ';
+                        if (stock.ma20) badges += '<span class="badge bg-ma20">20일선</span> ';
+                        if (stock.ma60) badges += '<span class="badge bg-ma60">60일선</span> ';
                         
-                        let plusMarks = '+'.repeat(Math.min(item.count, 10)) + (item.count > 10 ? '+' : '');
-                        let historyStr = (item.history_cells || []).join(' ➔ ');
-                        let stat = c4Stats[item.finale_cell] || {prob_a: 0.0, prob_b: 0.0, total: 0};
-
                         card.innerHTML = `
-                            <div class="rank-info" style="margin-bottom:4px;">
-                                <span class="rank-name">${item.name}</span>
-                                <span class="rank-code">${item.code}</span>
-                            </div>
-                            <div class="rank-path" style="margin-bottom:10px;">
-                                <strong style="color:var(--text-main);">경로:</strong> ${historyStr}
-                            </div>
-                            
-                            <div style="font-size:0.8rem; color:var(--text-muted);">📍 피날레: <strong style="color:var(--accent);">[${item.finale_cell}]</strong></div>
-                            
-                            <div class="stat-row"><span style="color:var(--text-main);">📈 최고 +20%</span><strong style="color:${getProbColor(stat.prob_a)}">${stat.prob_a}%</strong></div>
-                            <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_a}%; background:${getProbColor(stat.prob_a)}"></div></div>
-
-                            <div class="stat-row"><span style="color:var(--text-main);">📉 종가 +20%</span><strong style="color:${getProbColor(stat.prob_b)}">${stat.prob_b}%</strong></div>
-                            <div class="progress-bg"><div class="progress-fill" style="width:${stat.prob_b}%; background:${getProbColor(stat.prob_b)}"></div></div>
-                            
-                            <div class="rank-count">${plusMarks}</div>
+                            <div class="rank-info"><span class="rank-name">${stock.name}</span><span class="rank-code">${stock.code}</span></div>
+                            <div class="ma-badges">${badges}</div>
                         `;
-                        gridDiv.appendChild(card);
+                        maContainer.appendChild(card);
                     });
-                    groupDiv.appendChild(gridDiv);
-                    rankContainer.appendChild(groupDiv);
-                });
-
-                if (!rankHasData) rankContainer.innerHTML = '<div class="empty-state">누적 카운트 5회 이상 주도주가 없습니다.</div>';
-                // Firebase 데이터를 기반으로 즐겨찾기는 별도 렌더링되므로 여기서 호출 생략.
+                }
 
             } catch (error) { console.error("데이터 로드 실패:", error); }
         }
@@ -800,7 +517,7 @@
             listContainer.innerHTML = '';
 
             if (!cloudData.journals || cloudData.journals.length === 0) {
-                listContainer.innerHTML = '<li class="empty-state" style="padding:20px;">기록된 일지가 없습니다.</li>';
+                listContainer.innerHTML = '<li class="empty-state">기록된 일지가 없습니다.</li>';
                 return;
             }
 
