@@ -1,11 +1,10 @@
 import FinanceDataReader as fdr
 import pandas as pd
 import datetime
-import os
 import json
 import time
 
-print("🚀 [시스템 개정] AI 차트 분석(수급선/스윙선) & 퀀트 데이터 추출 스캐너 가동...")
+print("🚀 [시스템 개정] R1C1 매트릭스 제거 & 신규 퀀트 매매 로직 스캐너 가동...")
 
 df_krx = fdr.StockListing('KRX')
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
@@ -17,23 +16,11 @@ name_dict = dict(zip(df_krx['Code'], df_krx['Name']))
 start_date = (datetime.date.today() - datetime.timedelta(days=5*365)).strftime('%Y-%m-%d')
 today_str = datetime.date.today().strftime('%Y-%m-%d')
 
-history_file = "matrix_history.csv"
-if os.path.exists(history_file):
-    df_history = pd.read_csv(history_file)
-    df_history['Code'] = df_history['Code'].astype(str).str.zfill(6)
-else:
-    df_history = pd.DataFrame(columns=[
-        'Date', 'Code', 'Name', 'Cell', 'Base_Price', 
-        '1D_Return', '3D_Return', '5D_Return', 'Settled_Count'
-    ])
-
-matrix_results = {f"R{i}C{j}": [] for i in range(1, 5) for j in range(1, 5)}
-today_captured_list = []
+quant_captured_stocks = []
 ma_breakthrough_stocks = []
 new_high_stocks = []
-quant_captured_stocks = []
 
-print(f"📥 [2단계] {len(target_codes)}개 종목 전수조사 및 퀀트 조건 판별 중...")
+print(f"📥 {len(target_codes)}개 종목 전수조사 및 퀀트 조건 판별 중...")
 
 for code in target_codes:
     try:
@@ -41,10 +28,10 @@ for code in target_codes:
         df = fdr.DataReader(code_str, start=start_date, end=today_str)
         if len(df) < 61: continue 
         
+        # 지표 계산
         df['MA5'] = df['Close'].rolling(5).mean()
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA60'] = df['Close'].rolling(60).mean()
-        df['MA60_Vol'] = df['Volume'].rolling(60).mean()
         
         df['MA20_Vol'] = df['Volume'].rolling(20).mean() 
         df['Std20'] = df['Close'].rolling(20).std()
@@ -56,23 +43,19 @@ for code in target_codes:
         today_close = today_data['Close']
         prev_close = prev_data['Close']
         today_vol = today_data['Volume']
-        today_vol_ma60 = today_data['MA60_Vol']
         
-        if prev_close == 0 or today_vol_ma60 == 0 or pd.isna(today_data['BB_Upper']): continue
+        if prev_close == 0 or pd.isna(today_data['BB_Upper']) or today_data['MA20_Vol'] == 0: continue
         
         change_rate = ((today_close - prev_close) / prev_close) * 100
-        vol_ratio = (today_vol / today_vol_ma60) * 100
         stock_name = name_dict.get(code_str, code_str)
 
-        # 사용자 지정 퀀트 매수 조건 (Plotly 차트를 위한 OHLCV 데이터 추출 포함)
+        # 1. 사용자 지정 퀀트 매수 조건 (Plotly 차트를 위한 OHLCV 데이터 추출 포함)
         day_minus_5_data = df.iloc[-6]
-        
         cond1_vol = today_vol >= today_data['MA20_Vol'] * 2 
         cond2_bb = today_data['BB_Upper'] > day_minus_5_data['BB_Upper'] 
         cond3_price = today_close > today_data['High20'] 
         
         if change_rate > 0 and cond1_vol and cond2_bb and cond3_price:
-            # AI 차트용 120일치 캔들 및 저항선 데이터 생성
             df_120 = df.iloc[-120:]
             df_240 = df.iloc[-240:] if len(df) >= 240 else df
             vol_line = float(df_240.loc[df_240['Volume'].idxmax(), 'High'])
@@ -88,7 +71,7 @@ for code in target_codes:
                 }
             })
 
-        # 기존 52주 신고가 로직 (여기에도 AI 차트를 위해 OHLCV 데이터 탑재)
+        # 2. 52주/역사적 신고가 (여기도 AI 차트 데이터 탑재)
         if change_rate > 0:
             df_1yr = df.iloc[-252:] if len(df) >= 252 else df
             high_52w = df_1yr['High'].max()
@@ -103,7 +86,7 @@ for code in target_codes:
                 
             if is_new_high:
                 ohlcv_data = None
-                if len(new_high_stocks) < 10: # 용량 관리를 위해 10개만 차트 데이터 첨부
+                if len(new_high_stocks) < 15: # 용량 관리 (상위 15개만 차트 지원)
                     df_120 = df.iloc[-120:]
                     df_240 = df.iloc[-240:] if len(df) >= 240 else df
                     vol_line = float(df_240.loc[df_240['Volume'].idxmax(), 'High'])
@@ -118,24 +101,24 @@ for code in target_codes:
 
         if change_rate <= 0: continue 
         
+        # 3. 강력 이평선 돌파
         break_ma5 = bool(prev_data['Close'] <= prev_data['MA5'] and today_close > today_data['MA5'])
         break_ma20 = bool(prev_data['Close'] <= prev_data['MA20'] and today_close > today_data['MA20'])
         break_ma60 = bool(prev_data['Close'] <= prev_data['MA60'] and today_close > today_data['MA60'])
         if break_ma5 or break_ma20 or break_ma60:
             ma_breakthrough_stocks.append({"code": code_str, "name": stock_name, "ma5": break_ma5, "ma20": break_ma20, "ma60": break_ma60})
             
-        row = 1 if change_rate < 3 else 2 if change_rate < 6 else 3 if change_rate < 12 else 4
-        col = 1 if vol_ratio < 100 else 2 if vol_ratio < 200 else 3 if vol_ratio < 400 else 4
-        cell_id = f"R{row}C{col}"
-        
-        past_records = df_history[df_history['Code'] == code_str] if not df_history.empty else pd.DataFrame()
-        if not past_records.empty:
-            first_date = str(past_records['Date'].min())
-            first_cell = str(past_records[past_records['Date'] == first_date]['Cell'].values[0])
-        else:
-            first_date = today_str
-            first_cell = cell_id
-            
-        matrix_results[cell_id].append({
-            "code": code_str, "name": stock_name, "change": round(change_rate, 2), "volume": round(vol_ratio, 1),
-            "first_date": first
+    except Exception as e: pass
+    time.sleep(0.01)
+
+print("⚙️ 웹 배포용 고밀도 단일 JSON 패키징 빌드 중...")
+final_web_data = {
+    "quant_captured": quant_captured_stocks,
+    "ma_breakthroughs": ma_breakthrough_stocks,
+    "new_highs": new_high_stocks
+}
+
+with open('matrix_data.json', 'w', encoding='utf-8') as f:
+    json.dump(final_web_data, f, ensure_ascii=False, indent=4)
+
+print("🎉 R1C1 제거 및 퀀트 로직 최적화 배포 준비 완료!")
