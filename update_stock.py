@@ -1,10 +1,11 @@
 import FinanceDataReader as fdr
 import pandas as pd
+import numpy as np
 import datetime
 import json
 import time
 
-print("🚀 [시스템 개정] R1C1 매트릭스 제거 & 신규 퀀트 매매 로직 스캐너 가동...")
+print("🚀 [시스템 개정] 구름대(일목균형표) 로직 탑재 & 신규 퀀트 매매 로직 스캐너 가동...")
 
 df_krx = fdr.StockListing('KRX')
 df_krx = df_krx[~df_krx['Name'].str.endswith(('우', '우B', '우C'))]
@@ -28,7 +29,7 @@ for code in target_codes:
         df = fdr.DataReader(code_str, start=start_date, end=today_str)
         if len(df) < 61: continue 
         
-        # 지표 계산
+        # 기본 지표 계산
         df['MA5'] = df['Close'].rolling(5).mean()
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA60'] = df['Close'].rolling(60).mean()
@@ -37,6 +38,21 @@ for code in target_codes:
         df['Std20'] = df['Close'].rolling(20).std()
         df['BB_Upper'] = df['MA20'] + (df['Std20'] * 2) 
         df['High20'] = df['High'].rolling(20).max().shift(1) 
+        
+        # ☁️ 일목균형표 (구름대) 계산
+        df['high9'] = df['High'].rolling(window=9).max()
+        df['low9'] = df['Low'].rolling(window=9).min()
+        df['tenkan'] = (df['high9'] + df['low9']) / 2
+        
+        df['high26'] = df['High'].rolling(window=26).max()
+        df['low26'] = df['Low'].rolling(window=26).min()
+        df['kijun'] = (df['high26'] + df['low26']) / 2
+        
+        df['senkou_a'] = ((df['tenkan'] + df['kijun']) / 2).shift(26)
+        
+        df['high52'] = df['High'].rolling(window=52).max()
+        df['low52'] = df['Low'].rolling(window=52).min()
+        df['senkou_b'] = ((df['high52'] + df['low52']) / 2).shift(26)
         
         today_data = df.iloc[-1]
         prev_data = df.iloc[-2]
@@ -49,7 +65,7 @@ for code in target_codes:
         change_rate = ((today_close - prev_close) / prev_close) * 100
         stock_name = name_dict.get(code_str, code_str)
 
-        # 1. 사용자 지정 퀀트 매수 조건 (Plotly 차트를 위한 OHLCV 데이터 추출 포함)
+        # 1. 퀀트 매수 조건
         day_minus_5_data = df.iloc[-6]
         cond1_vol = today_vol >= today_data['MA20_Vol'] * 2 
         cond2_bb = today_data['BB_Upper'] > day_minus_5_data['BB_Upper'] 
@@ -67,11 +83,13 @@ for code in target_codes:
                     "dates": df_120.index.strftime('%Y-%m-%d').tolist(),
                     "open": df_120['Open'].tolist(), "high": df_120['High'].tolist(),
                     "low": df_120['Low'].tolist(), "close": df_120['Close'].tolist(), "volume": df_120['Volume'].tolist(),
+                    "senkou_a": [None if pd.isna(x) else round(x, 2) for x in df_120['senkou_a']],
+                    "senkou_b": [None if pd.isna(x) else round(x, 2) for x in df_120['senkou_b']],
                     "vol_line": vol_line, "swing_line": swing_line
                 }
             })
 
-        # 2. 52주/역사적 신고가 (여기도 AI 차트 데이터 탑재)
+        # 2. 52주/역사적 신고가
         if change_rate > 0:
             df_1yr = df.iloc[-252:] if len(df) >= 252 else df
             high_52w = df_1yr['High'].max()
@@ -86,7 +104,7 @@ for code in target_codes:
                 
             if is_new_high:
                 ohlcv_data = None
-                if len(new_high_stocks) < 15: # 용량 관리 (상위 15개만 차트 지원)
+                if len(new_high_stocks) < 15:
                     df_120 = df.iloc[-120:]
                     df_240 = df.iloc[-240:] if len(df) >= 240 else df
                     vol_line = float(df_240.loc[df_240['Volume'].idxmax(), 'High'])
@@ -95,6 +113,8 @@ for code in target_codes:
                         "dates": df_120.index.strftime('%Y-%m-%d').tolist(),
                         "open": df_120['Open'].tolist(), "high": df_120['High'].tolist(),
                         "low": df_120['Low'].tolist(), "close": df_120['Close'].tolist(), "volume": df_120['Volume'].tolist(),
+                        "senkou_a": [None if pd.isna(x) else round(x, 2) for x in df_120['senkou_a']],
+                        "senkou_b": [None if pd.isna(x) else round(x, 2) for x in df_120['senkou_b']],
                         "vol_line": vol_line, "swing_line": swing_line
                     }
                 new_high_stocks.append({ "code": code_str, "name": stock_name, "type": high_type, "ohlcv": ohlcv_data })
@@ -121,4 +141,4 @@ final_web_data = {
 with open('matrix_data.json', 'w', encoding='utf-8') as f:
     json.dump(final_web_data, f, ensure_ascii=False, indent=4)
 
-print("🎉 R1C1 제거 및 퀀트 로직 최적화 배포 준비 완료!")
+print("🎉 구름대(일목균형표) 시각화 데이터 배포 완료!")
